@@ -1,0 +1,24 @@
+# Root ignores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python / Django
+__pycache__/
+*.py[cod]
+*.log
+.env
+.env.*
+
+# Backend virtual environment and runtime artifacts
+Backend/.venv/
+Backend/**/__pycache__/
+Backend/**/db.sqlite3
+Backend/**/staticfiles/
+Backend/**/media/
+
+# Node / Frontend
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.env
