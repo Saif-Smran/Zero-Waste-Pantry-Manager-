@@ -11,22 +11,25 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import Csv, config
+from urllib.parse import unquote, urlparse
+from decouple import Config, Csv, RepositoryEnv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = BASE_DIR.parent / '.env'
+env = Config(RepositoryEnv(ENV_FILE))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me')
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = env('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+ALLOWED_HOSTS = env('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 
 # Application definition
@@ -77,15 +80,39 @@ WSGI_APPLICATION = 'pantry_manager.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+def _clean_env(value):
+    if isinstance(value, str):
+        return value.strip().strip('"').strip("'")
+    return value
 
-# Reserved for future database URL parsing in production deployments.
-DATABASE_URL = config('DATABASE_URL', default='')
+
+def _is_unresolved_template(value):
+    return isinstance(value, str) and '${{' in value
+
+
+def _first_real_env(names, default=''):
+    for name in names:
+        value = _clean_env(env(name, default=''))
+        if value and not _is_unresolved_template(value):
+            return value
+    return default
+
+
+
+DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _first_real_env(['DB_NAME', 'PGDATABASE', 'POSTGRES_DB'], default='pantry_manager'),
+            'USER': _first_real_env(['DB_USER', 'PGUSER', 'POSTGRES_USER'], default='postgres'),
+            'PASSWORD': _first_real_env(['DB_PASSWORD', 'PGPASSWORD', 'POSTGRES_PASSWORD'], default=''),
+            'HOST': _first_real_env(['RAILWAY_TCP_PROXY_DOMAIN', 'DB_HOST', 'PGHOST'], default='localhost'),
+            'PORT': _first_real_env(['RAILWAY_TCP_PROXY_PORT', 'DB_PORT', 'PGPORT'], default='5432'),
+            'OPTIONS': {
+                'sslmode': env('DB_SSLMODE', default='require'),
+                'connect_timeout': env('DB_CONNECT_TIMEOUT', default=10, cast=int),
+            },
+        }
+    }
 
 
 # Password validation
