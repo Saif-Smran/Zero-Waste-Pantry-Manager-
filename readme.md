@@ -3,6 +3,12 @@
 ## Description
 Zero-Waste Pantry Manager is a web application that helps users manage pantry inventory, monitor expiration dates, and reduce food waste with better item visibility.
 
+## Current Implementation Status
+- Core inventory model implemented: FoodItem (name, quantity, expiry date, created/updated timestamps).
+- Model-level validation prevents saving items with past expiry dates.
+- Expiry helper properties support near-expiry workflows.
+- Default inventory ordering is by nearest expiry date.
+
 ## Repository Structure
 - Backend: Django API and data layer
 - Frontend: Client application workspace (implementation in progress)
@@ -20,8 +26,19 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 3. Install dependencies from Backend/requirements.txt.
 4. Copy Backend/.env.example to Backend/.env.
 5. Fill database and secret values in Backend/.env.
-6. Run migrations.
+6. Create and apply migrations.
 7. Start the backend server.
+
+## Inventory Data Model
+
+The backend currently includes a FoodItem model with the following behavior:
+
+- Required fields: id, name, quantity, expiry_date, created_at, updated_at.
+- Validation rule: expiry_date must not be earlier than today.
+- Computed properties:
+  - days_until_expiry: integer days left until expiration.
+  - is_near_expiry: true when an item expires in 3 days or less.
+- Default ordering: soonest expiry first.
 
 ## Database Notes
 - The backend is configured for PostgreSQL as the main database.
@@ -31,6 +48,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 ## Documentation
 - Backend setup guide: [Backend/README.md](Backend/README.md)
 - Database setup notes: [docs/part-2-db-setup.md](docs/part-2-db-setup.md)
+- Model design and normalization notes: [docs/part-3-model.md](docs/part-3-model.md)
 
 ## Team Members
 - A H M Saif Smran
