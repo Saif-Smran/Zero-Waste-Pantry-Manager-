@@ -22,6 +22,16 @@ FoodItem schema and rules:
 - Computed properties: days_until_expiry, is_near_expiry
 - Default ordering: expiry_date ascending
 
+FoodItem Django Admin configuration:
+
+- Registered with a custom ModelAdmin.
+- list_display: name, quantity, expiry_date, days_until_expiry, is_near_expiry, created_at.
+- list_filter: expiry_date.
+- search_fields: name.
+- ordering: expiry_date ascending.
+- readonly_fields: created_at, updated_at.
+- Near-expiry column is rendered with HTML color highlighting for fast visual identification.
+
 ## Tech Stack
 - Python
 - Django
@@ -78,6 +88,11 @@ Set these in Backend/.env:
 ## Validation Commands
 - Django system checks:
   - python manage.py check
+- Admin access setup (first-time local use):
+   - python manage.py createsuperuser
+- Run server and open admin:
+   - python manage.py runserver
+   - visit /admin and open Food items under inventory
 - Create migrations after model changes:
    - python manage.py makemigrations
 - Migrations:
@@ -89,6 +104,7 @@ Set these in Backend/.env:
 - Root overview: [readme.md](../readme.md)
 - Database setup details: [docs/part-2-db-setup.md](../docs/part-2-db-setup.md)
 - Model specification and 3NF notes: [docs/part-3-model.md](../docs/part-3-model.md)
+- Admin configuration and usage: [docs/part-4-admin.md](../docs/part-4-admin.md)
 
 ## Team Members
 - A H M Saif Smran

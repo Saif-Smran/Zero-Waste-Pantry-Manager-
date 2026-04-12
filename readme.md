@@ -8,6 +8,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - Model-level validation prevents saving items with past expiry dates.
 - Expiry helper properties support near-expiry workflows.
 - Default inventory ordering is by nearest expiry date.
+- Django Admin configured for FoodItem with search, filter, ordering, and near-expiry visual highlighting.
 
 ## Repository Structure
 - Backend: Django API and data layer
@@ -40,6 +41,17 @@ The backend currently includes a FoodItem model with the following behavior:
   - is_near_expiry: true when an item expires in 3 days or less.
 - Default ordering: soonest expiry first.
 
+## Django Admin
+
+FoodItem is available in Django Admin with operational inventory tooling:
+
+- Changelist columns: name, quantity, expiry date, days until expiry, near-expiry status, created timestamp.
+- Filter: by expiry date.
+- Search: by item name.
+- Ordering: earliest expiry date first.
+- Read-only audit fields: created_at, updated_at.
+- Near-expiry visualization: red highlighted values for items close to expiry.
+
 ## Database Notes
 - The backend is configured for PostgreSQL as the main database.
 - For Railway from local development, use public proxy values or a full public database URL in Backend/.env.
@@ -49,6 +61,7 @@ The backend currently includes a FoodItem model with the following behavior:
 - Backend setup guide: [Backend/README.md](Backend/README.md)
 - Database setup notes: [docs/part-2-db-setup.md](docs/part-2-db-setup.md)
 - Model design and normalization notes: [docs/part-3-model.md](docs/part-3-model.md)
+- Admin configuration and usage notes: [docs/part-4-admin.md](docs/part-4-admin.md)
 
 ## Team Members
 - A H M Saif Smran
