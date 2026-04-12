@@ -9,6 +9,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - Expiry helper properties support near-expiry workflows.
 - Default inventory ordering is by nearest expiry date.
 - Django Admin configured for FoodItem with search, filter, ordering, and near-expiry visual highlighting.
+- DRF FoodItem serializer implemented with computed output fields and request validation.
 
 ## Repository Structure
 - Backend: Django API and data layer
@@ -62,6 +63,7 @@ FoodItem is available in Django Admin with operational inventory tooling:
 - Database setup notes: [docs/part-2-db-setup.md](docs/part-2-db-setup.md)
 - Model design and normalization notes: [docs/part-3-model.md](docs/part-3-model.md)
 - Admin configuration and usage notes: [docs/part-4-admin.md](docs/part-4-admin.md)
+- Serializer fields and validation notes: [docs/part-5-serializer.md](docs/part-5-serializer.md)
 
 ## Team Members
 - A H M Saif Smran

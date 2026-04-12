@@ -9,6 +9,7 @@ The inventory app currently includes:
 
 - ConnectionCheck model for basic database connectivity checks.
 - FoodItem model for pantry item tracking.
+- FoodItem DRF serializer for API payload validation and response shaping.
 
 FoodItem schema and rules:
 
@@ -105,6 +106,7 @@ Set these in Backend/.env:
 - Database setup details: [docs/part-2-db-setup.md](../docs/part-2-db-setup.md)
 - Model specification and 3NF notes: [docs/part-3-model.md](../docs/part-3-model.md)
 - Admin configuration and usage: [docs/part-4-admin.md](../docs/part-4-admin.md)
+- Serializer fields and validation: [docs/part-5-serializer.md](../docs/part-5-serializer.md)
 
 ## Team Members
 - A H M Saif Smran
