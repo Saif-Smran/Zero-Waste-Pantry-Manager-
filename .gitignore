@@ -9,7 +9,8 @@ __pycache__/
 *.py[cod]
 *.log
 .env
-.env.*
+.env.local
+.env.*.local
 
 # Backend virtual environment and runtime artifacts
 Backend/.venv/
@@ -22,3 +23,8 @@ Backend/**/media/
 Frontend/node_modules/
 Frontend/dist/
 Frontend/.env
+Frontend/.env.local
+Frontend/.env.*.local
+
+# Local password files
+.md.local

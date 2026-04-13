@@ -68,6 +68,7 @@ FoodItem is available in Django Admin with operational inventory tooling:
 - Admin configuration and usage notes: [docs/part-4-admin.md](docs/part-4-admin.md)
 - Serializer fields and validation notes: [docs/part-5-serializer.md](docs/part-5-serializer.md)
 - API views and endpoints: [docs/part-6-api-views.md](docs/part-6-api-views.md)
+- URL routing and endpoint map: [docs/part-7-urls.md](docs/part-7-urls.md)
 
 ## Team Members
 - A H M Saif Smran

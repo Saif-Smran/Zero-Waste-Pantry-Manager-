@@ -3,6 +3,6 @@ from rest_framework.routers import DefaultRouter
 from .views import FoodItemViewSet
 
 router = DefaultRouter()
-router.register("food-items", FoodItemViewSet, basename="food-items")
+router.register("items", FoodItemViewSet, basename="food-item")
 
 urlpatterns = router.urls

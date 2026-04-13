@@ -36,15 +36,15 @@ FoodItem Django Admin configuration:
 
 FoodItem API endpoints:
 
-- Base path: /api/food-items/
+- Base path: /api/items/
 - Full CRUD available through DRF ModelViewSet.
 - Sorting options:
-   - /api/food-items/?sort=name
-   - /api/food-items/?sort=quantity
-   - /api/food-items/ (default sort by expiry_date ascending)
+   - /api/items/?sort=name
+   - /api/items/?sort=quantity
+   - /api/items/ (default sort by expiry_date ascending)
 - Custom actions:
-   - /api/food-items/near-expiry/ (GET): returns items expiring in the next 3 days (including today)
-   - /api/food-items/summary/ (GET): returns total_items, near_expiry_count, expired_count
+   - /api/items/near-expiry/ (GET): returns items expiring in the next 3 days (including today)
+   - /api/items/summary/ (GET): returns total_items, near_expiry_count, expired_count
 - Model-level validation is enforced during create and update via full_clean().
 
 ## Tech Stack
@@ -122,6 +122,7 @@ Set these in Backend/.env:
 - Admin configuration and usage: [docs/part-4-admin.md](../docs/part-4-admin.md)
 - Serializer fields and validation: [docs/part-5-serializer.md](../docs/part-5-serializer.md)
 - API views and endpoints: [docs/part-6-api-views.md](../docs/part-6-api-views.md)
+- URL routing and endpoint map: [docs/part-7-urls.md](../docs/part-7-urls.md)
 
 ## Team Members
 - A H M Saif Smran
