@@ -1,12 +1,49 @@
 from datetime import timedelta
 
 from django.utils import timezone
+from rest_framework import status
+from rest_framework.views import exception_handler
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from .models import FoodItem
 from .serializers import FoodItemSerializer
+
+
+def _extract_error_and_field(detail):
+    field = None
+    message = "An unexpected error occurred."
+
+    if isinstance(detail, dict) and detail:
+        field, value = next(iter(detail.items()))
+        if isinstance(value, list) and value:
+            message = str(value[0])
+        else:
+            message = str(value)
+    elif isinstance(detail, list) and detail:
+        message = str(detail[0])
+    elif detail:
+        message = str(detail)
+
+    if field == "non_field_errors":
+        field = None
+
+    return message, field
+
+
+def custom_exception_handler(exc, context):
+    response = exception_handler(exc, context)
+
+    if response is None:
+        return Response(
+            {"error": "An unexpected error occurred.", "field": None},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    message, field = _extract_error_and_field(response.data)
+    response.data = {"error": message, "field": field}
+    return response
 
 
 class FoodItemViewSet(ModelViewSet):

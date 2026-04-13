@@ -15,5 +15,8 @@ class FoodItemAdmin(admin.ModelAdmin):
 	@admin.display(description='Near Expiry')
 	def is_near_expiry(self, obj):
 		if obj.is_near_expiry:
-			return format_html('<span style="color: #c62828; font-weight: 700;">Yes</span>')
-		return format_html('<span style="color: #2e7d32;">No</span>')
+			return format_html(
+				'<span style="color: #c62828; font-weight: 700;">{}</span>',
+				'Yes',
+			)
+		return format_html('<span style="color: #2e7d32;">{}</span>', 'No')

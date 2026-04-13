@@ -14,6 +14,11 @@ from pathlib import Path
 from urllib.parse import unquote, urlparse
 from decouple import Config, Csv, RepositoryEnv
 
+try:
+    from tzlocal import get_localzone_name
+except Exception:  # pragma: no cover - safe fallback when tzlocal is unavailable
+    get_localzone_name = None
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = BASE_DIR.parent / '.env'
@@ -45,6 +50,17 @@ INSTALLED_APPS = [
     'rest_framework',
     'inventory',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'EXCEPTION_HANDLER': 'inventory.views.custom_exception_handler',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -139,7 +155,16 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# Prefer explicit TIME_ZONE from .env; otherwise use OS local timezone.
+if get_localzone_name:
+    try:
+        _detected_time_zone = get_localzone_name()
+    except Exception:
+        _detected_time_zone = 'UTC'
+else:
+    _detected_time_zone = 'UTC'
+
+TIME_ZONE = env('TIME_ZONE', default=_detected_time_zone)
 
 USE_I18N = True
 
@@ -152,6 +177,10 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

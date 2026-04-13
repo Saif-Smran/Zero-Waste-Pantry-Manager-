@@ -27,4 +27,4 @@ Frontend/.env.local
 Frontend/.env.*.local
 
 # Local password files
-.md.local
+*.local.md

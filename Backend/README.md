@@ -46,6 +46,11 @@ FoodItem API endpoints:
    - /api/items/near-expiry/ (GET): returns items expiring in the next 3 days (including today)
    - /api/items/summary/ (GET): returns total_items, near_expiry_count, expired_count
 - Model-level validation is enforced during create and update via full_clean().
+- Security defaults:
+   - CSRF middleware is active.
+   - DRF defaults require authentication for API access.
+   - A custom exception handler returns consistent error JSON.
+   - Security headers include XSS filter, frame deny, and no-sniff.
 
 ## Tech Stack
 - Python
@@ -91,6 +96,7 @@ Set these in Backend/.env:
 - DB_PORT
 - DB_SSLMODE
 - DB_CONNECT_TIMEOUT
+- TIME_ZONE (optional, overrides OS-detected local timezone)
 
 ## Railway PostgreSQL Guidance
 - For local development, use Railway public proxy host and port, or DATABASE_PUBLIC_URL.
@@ -105,6 +111,9 @@ Set these in Backend/.env:
   - python manage.py check
 - Admin access setup (first-time local use):
    - python manage.py createsuperuser
+- Admin credential local record:
+   - store local admin login details in ../.md.local only
+   - do not commit ../.md.local
 - Run server and open admin:
    - python manage.py runserver
    - visit /admin and open Food items under inventory
@@ -123,6 +132,7 @@ Set these in Backend/.env:
 - Serializer fields and validation: [docs/part-5-serializer.md](../docs/part-5-serializer.md)
 - API views and endpoints: [docs/part-6-api-views.md](../docs/part-6-api-views.md)
 - URL routing and endpoint map: [docs/part-7-urls.md](../docs/part-7-urls.md)
+- Security implementation and SRS mapping: [docs/part-8-security.md](../docs/part-8-security.md)
 
 ## Team Members
 - A H M Saif Smran

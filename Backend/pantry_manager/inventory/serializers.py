@@ -5,7 +5,7 @@ from .models import FoodItem
 
 
 class FoodItemSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(max_length=255, trim_whitespace=False)
+    name = serializers.CharField(trim_whitespace=False)
     quantity = serializers.IntegerField()
     days_until_expiry = serializers.SerializerMethodField(read_only=True)
     is_near_expiry = serializers.SerializerMethodField(read_only=True)
@@ -49,4 +49,6 @@ class FoodItemSerializer(serializers.ModelSerializer):
         cleaned_name = value.strip()
         if not cleaned_name:
             raise serializers.ValidationError("Name cannot be empty.")
+        if len(cleaned_name) > 255:
+            raise serializers.ValidationError("Name cannot exceed 255 characters.")
         return cleaned_name

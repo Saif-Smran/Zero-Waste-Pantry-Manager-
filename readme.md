@@ -13,6 +13,12 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - DRF FoodItem API views implemented using ModelViewSet with full CRUD.
 - API supports dynamic sorting by name and quantity, with default expiry-date sorting.
 - Custom API actions available for near-expiry items and inventory summary metrics.
+- Security hardening added in backend settings and API error handling:
+  - Active CSRF middleware.
+  - DRF default authentication and permission classes (authenticated-only by default).
+  - Security headers for XSS, clickjacking, and content-type sniff protection.
+  - Consistent JSON error format for API failures.
+  - Serializer input length validation for item name.
 
 ## Repository Structure
 - Backend: Django API and data layer
@@ -69,6 +75,12 @@ FoodItem is available in Django Admin with operational inventory tooling:
 - Serializer fields and validation notes: [docs/part-5-serializer.md](docs/part-5-serializer.md)
 - API views and endpoints: [docs/part-6-api-views.md](docs/part-6-api-views.md)
 - URL routing and endpoint map: [docs/part-7-urls.md](docs/part-7-urls.md)
+- Security implementation and SRS mapping: [docs/part-8-security.md](docs/part-8-security.md)
+
+## Security Notes
+- API endpoints now require authenticated access by default.
+- Local admin credentials are stored in .md.local for this machine only.
+- .md.local is gitignored and must never be committed.
 
 ## Team Members
 - A H M Saif Smran
