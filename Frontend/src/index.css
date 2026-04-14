@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+@theme {
+	--color-safe: #2e7d32;
+	--color-warning: #e65100;
+	--color-danger: #c62828;
+	--color-pantry-bg: #f5f5f5;
+	--color-pantry-card: #ffffff;
+}

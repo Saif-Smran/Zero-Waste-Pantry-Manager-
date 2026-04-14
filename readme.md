@@ -40,6 +40,31 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 6. Create and apply migrations.
 7. Start the backend server.
 
+## Frontend Setup
+1. Go to the frontend directory.
+2. Install dependencies.
+3. Copy `.env.example` to `.env`.
+4. Set `VITE_API_URL` in `.env`.
+5. Start the frontend development server.
+
+```bash
+cd Frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+For Windows PowerShell:
+
+```powershell
+Set-Location Frontend
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
+
+Frontend stack includes Vite + React, Tailwind CSS v4, React Router DOM v7, Axios, and React Icons.
+
 ## Inventory Data Model
 
 The backend currently includes a FoodItem model with the following behavior:
@@ -69,6 +94,7 @@ FoodItem is available in Django Admin with operational inventory tooling:
 
 ## Documentation
 - Backend setup guide: [Backend/README.md](Backend/README.md)
+- Frontend setup guide: [Frontend/README.md](Frontend/README.md)
 - Database setup notes: [docs/part-2-db-setup.md](docs/part-2-db-setup.md)
 - Model design and normalization notes: [docs/part-3-model.md](docs/part-3-model.md)
 - Admin configuration and usage notes: [docs/part-4-admin.md](docs/part-4-admin.md)
