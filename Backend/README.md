@@ -45,6 +45,12 @@ FoodItem API endpoints:
 - Custom actions:
    - /api/items/near-expiry/ (GET): returns items expiring in the next 3 days (including today)
    - /api/items/summary/ (GET): returns total_items, near_expiry_count, expired_count
+- Authentication endpoints:
+   - /api/auth/csrf/ (GET): sets CSRF cookie for frontend session requests
+   - /api/auth/register/ (POST): creates user and starts authenticated session
+   - /api/auth/login/ (POST): authenticates user and starts session
+   - /api/auth/logout/ (POST): ends authenticated session
+   - /api/auth/session/ (GET): returns current authenticated user session state
 - Model-level validation is enforced during create and update via full_clean().
 - Security defaults:
    - CSRF middleware is active.
@@ -97,6 +103,8 @@ Set these in Backend/.env:
 - DB_SSLMODE
 - DB_CONNECT_TIMEOUT
 - TIME_ZONE (optional, overrides OS-detected local timezone)
+- CORS_ALLOWED_ORIGINS (optional, defaults include local Vite origins)
+- CSRF_TRUSTED_ORIGINS (optional, defaults include local Vite origins)
 
 ## Railway PostgreSQL Guidance
 - For local development, use Railway public proxy host and port, or DATABASE_PUBLIC_URL.

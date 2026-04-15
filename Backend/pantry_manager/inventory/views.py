@@ -1,10 +1,13 @@
 from datetime import timedelta
 
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.utils import timezone
+from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import status
-from rest_framework.views import exception_handler
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import exception_handler
 from rest_framework.viewsets import ModelViewSet
 
 from .models import FoodItem
@@ -44,6 +47,88 @@ def custom_exception_handler(exc, context):
     message, field = _extract_error_and_field(response.data)
     response.data = {"error": message, "field": field}
     return response
+
+
+def _serialize_user(user):
+    return {
+        "id": user.id,
+        "username": user.get_username(),
+    }
+
+
+@api_view(["GET"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+@ensure_csrf_cookie
+def csrf_cookie(request):
+    return Response({"message": "CSRF cookie set."})
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def register_user(request):
+    username = (request.data.get("username") or "").strip()
+    password = request.data.get("password") or ""
+
+    if not username:
+        return Response({"error": "Username is required.", "field": "username"}, status=400)
+    if not password:
+        return Response({"error": "Password is required.", "field": "password"}, status=400)
+
+    user_model = get_user_model()
+    if user_model.objects.filter(username=username).exists():
+        return Response(
+            {"error": "Username already exists.", "field": "username"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = user_model.objects.create_user(username=username, password=password)
+    login(request, user)
+    return Response({"user": _serialize_user(user)}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def login_user(request):
+    username = (request.data.get("username") or "").strip()
+    password = request.data.get("password") or ""
+
+    if not username or not password:
+        return Response(
+            {"error": "Username and password are required.", "field": None},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = authenticate(request, username=username, password=password)
+    if user is None:
+        return Response(
+            {"error": "Invalid username or password.", "field": None},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    login(request, user)
+    return Response({"user": _serialize_user(user)}, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def logout_user(request):
+    logout(request)
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def session_user(request):
+    if not request.user.is_authenticated:
+        return Response(
+            {"error": "Not authenticated.", "field": None},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    return Response({"user": _serialize_user(request.user)}, status=status.HTTP_200_OK)
 
 
 class FoodItemViewSet(ModelViewSet):

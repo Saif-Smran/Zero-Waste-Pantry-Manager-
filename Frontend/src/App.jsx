@@ -1,32 +1,64 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { RiQuestionLine } from 'react-icons/ri'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import InventoryPage from './pages/InventoryPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
+import useAuth from './hooks/useAuth'
+
+function ProtectedRoute({ children }) {
+  const { isAuthenticated, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="animate-spin border-4 border-gray-200 border-t-gray-800 rounded-full w-10 h-10 mx-auto mt-20" />
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
+}
 
 function App() {
-  return (
-    <div className="min-h-screen bg-[#f5f5f5]">
-      <nav className="w-full bg-gray-900 text-white flex justify-between items-center px-6 py-4">
-        <h1 className="font-bold text-xl">Zero-Waste Pantry Manager</h1>
-        <button
-          type="button"
-          className="bg-transparent border border-white text-white text-sm px-3 py-1 rounded hover:bg-white hover:text-gray-900 transition"
-          onClick={() => {}}
-        >
-          <span className="inline-flex items-center gap-1">
-            <RiQuestionLine />
-            Help
-          </span>
-        </button>
-      </nav>
+  const { isAuthenticated, logout } = useAuth()
 
-      <main className="bg-[#f5f5f5] min-h-screen">
-        <BrowserRouter>
+  const handleLogout = async () => {
+    await logout()
+  }
+
+  return (
+    <BrowserRouter>
+      <div className="min-h-screen bg-pantry-bg">
+        <nav className="w-full bg-gray-900 text-white flex justify-between items-center px-6 py-4">
+          <h1 className="font-bold text-xl">Zero-Waste Pantry Manager</h1>
+          {isAuthenticated && (
+            <button
+              type="button"
+              className="bg-white text-gray-900 text-sm px-3 py-1 rounded hover:bg-gray-100 transition"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          )}
+        </nav>
+
+        <main className="bg-pantry-bg min-h-screen">
           <Routes>
-            <Route path="/" element={<InventoryPage />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <InventoryPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
           </Routes>
-        </BrowserRouter>
-      </main>
-    </div>
+        </main>
+      </div>
+    </BrowserRouter>
   )
 }
 

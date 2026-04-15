@@ -13,6 +13,12 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - DRF FoodItem API views implemented using ModelViewSet with full CRUD.
 - API supports dynamic sorting by name and quantity, with default expiry-date sorting.
 - Custom API actions available for near-expiry items and inventory summary metrics.
+- Frontend inventory list view implemented with reusable hooks and Tailwind UI components.
+- Frontend supports sorting inventory by expiry, name, and quantity.
+- Frontend item cards include expiry-status color coding and expired badge labeling.
+- Session-based authentication is implemented (register, login, logout, session check).
+- Inventory routes are protected in frontend and require authenticated session.
+- Frontend includes add-item form for creating inventory items from the UI.
 - Security hardening added in backend settings and API error handling:
   - Active CSRF middleware.
   - DRF default authentication and permission classes (authenticated-only by default).
@@ -22,7 +28,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 
 ## Repository Structure
 - Backend: Django API and data layer
-- Frontend: Client application workspace (implementation in progress)
+- Frontend: React client with auth pages and inventory management UI
 - docs: Supporting technical documentation
 
 ## Current Tech Stack
@@ -30,6 +36,15 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - Database: PostgreSQL (Railway)
 - Config and Environment: python-decouple
 - API Access: django-cors-headers
+- Frontend: Vite + React, Tailwind CSS v4, React Router DOM v7, Axios, React Icons, clsx
+
+## Frontend Architecture
+- `src/pages/InventoryPage.jsx` composes the inventory list experience.
+- `src/pages/LoginPage.jsx` and `src/pages/RegisterPage.jsx` provide auth flows.
+- `src/hooks/useInventory.js` handles item list fetching, sorting, loading/error state, and refetch.
+- `src/hooks/useSummary.js` handles summary metrics fetching.
+- `src/hooks/useAuth.js` and `src/context/AuthContext.jsx` manage session state.
+- `src/components/AddItemForm.jsx`, `src/components/SummaryBar.jsx`, `src/components/SortControls.jsx`, and `src/components/ItemCard.jsx` provide reusable inventory UI building blocks.
 
 ## Quick Start
 1. Go to the backend directory.
@@ -45,7 +60,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 2. Install dependencies.
 3. Copy `.env.example` to `.env`.
 4. Set `VITE_API_URL` in `.env`.
-5. Start the frontend development server.
+5. Start the frontend development server from the `Frontend` folder.
 
 ```bash
 cd Frontend
@@ -64,6 +79,13 @@ npm run dev
 ```
 
 Frontend stack includes Vite + React, Tailwind CSS v4, React Router DOM v7, Axios, and React Icons.
+
+## Authentication Flow
+- Register: create account from frontend register page.
+- Login: authenticate with username and password.
+- Session check: frontend restores session state on page load.
+- Logout: clears session and redirects protected routes to login.
+- API access: inventory endpoints require authenticated session.
 
 ## Inventory Data Model
 
