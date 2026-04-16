@@ -4,28 +4,33 @@
 This part documents the Django REST Framework API views for FoodItem. The API is implemented with a ModelViewSet, supports full CRUD operations, optional sorting, and two custom collection endpoints for near-expiry and summary metrics.
 
 ## Base Path
-- /api/food-items/
+- /api/items/
 
 ## Endpoint Table
 
 | Method | Endpoint | Description | Query Params / Notes |
 |---|---|---|---|
-| GET | /api/food-items/ | List all food items | Default sort: expiry_date ascending |
-| GET | /api/food-items/{id}/ | Retrieve one food item by ID | Returns serializer fields including computed fields |
-| POST | /api/food-items/ | Create a food item | full_clean() runs before save |
-| PUT | /api/food-items/{id}/ | Fully update a food item | full_clean() runs before save |
-| PATCH | /api/food-items/{id}/ | Partially update a food item | full_clean() runs before save |
-| DELETE | /api/food-items/{id}/ | Delete a food item | Returns 204 on success |
-| GET | /api/food-items/near-expiry/ | List items expiring within 3 days | Includes today through today+3 days |
-| GET | /api/food-items/summary/ | Get inventory summary counters | Returns total_items, near_expiry_count, expired_count |
+| GET | /api/items/ | List authenticated user's food items | Default sort: expiry_date ascending |
+| GET | /api/items/{id}/ | Retrieve one owned food item by ID | Returns serializer fields including computed fields |
+| POST | /api/items/ | Create a food item | full_clean() runs before save, owner set from session |
+| PUT | /api/items/{id}/ | Fully update an owned food item | full_clean() runs before save |
+| PATCH | /api/items/{id}/ | Partially update an owned food item | full_clean() runs before save |
+| DELETE | /api/items/{id}/ | Delete an owned food item | Returns 204 on success |
+| GET | /api/items/near-expiry/ | List owned items expiring within 3 days | Includes today through today+3 days |
+| GET | /api/items/summary/ | Get owned inventory summary counters | Returns total_items, near_expiry_count, expired_count |
 
 ## Sorting Behavior (List Endpoint)
 Use the optional sort query parameter on list requests:
 
-- /api/food-items/?sort=name -> alphabetical by name (ascending)
-- /api/food-items/?sort=quantity -> by quantity (ascending)
-- /api/food-items/ -> default by expiry_date (ascending)
+- /api/items/?sort=name -> alphabetical by name (ascending)
+- /api/items/?sort=quantity -> by quantity (ascending)
+- /api/items/ -> default by expiry_date (ascending)
 - Unknown sort values fall back to default expiry_date ordering.
+
+## Ownership Scope
+
+- All item endpoints require authentication and are filtered by `request.user`.
+- Cross-user access attempts resolve as not found because non-owned rows are excluded from the queryset.
 
 ## Validation Behavior
 The API applies both serializer-level and model-level validation:

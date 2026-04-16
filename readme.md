@@ -5,6 +5,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 
 ## Current Implementation Status
 - Core inventory model implemented: FoodItem (name, quantity, expiry date, created/updated timestamps).
+- FoodItem records are user-owned and isolated per authenticated account.
 - Model-level validation prevents saving items with past expiry dates.
 - Expiry helper properties support near-expiry workflows.
 - Default inventory ordering is by nearest expiry date.
@@ -16,8 +17,10 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - Frontend inventory list view implemented with reusable hooks and Tailwind UI components.
 - Frontend supports sorting inventory by expiry, name, and quantity.
 - Frontend item cards include expiry-status color coding and expired badge labeling.
+- Frontend item cards include quantity decrement and delete actions with confirmation.
 - Session-based authentication is implemented (register, login, logout, session check).
 - Inventory routes are protected in frontend and require authenticated session.
+- Inventory API responses are user-scoped, so each logged-in user only sees their own items.
 - Frontend includes add-item form for creating inventory items from the UI with inline field validation.
 - Add-item form now validates client-side before submit:
   - Item name is required.
@@ -26,6 +29,8 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - Add-item submission disables Clear/Add buttons and shows `Adding...` while request is in progress.
 - On successful create (201), frontend refetches inventory and resets the form.
 - react-hot-toast is integrated in frontend for immediate success/error feedback.
+- Global toast host is mounted in `src/main.jsx` with bottom-right positioning.
+- Help modal is available from the authenticated navbar with sorting guidance and color legend.
 - Security hardening added in backend settings and API error handling:
   - Active CSRF middleware.
   - DRF default authentication and permission classes (authenticated-only by default).
@@ -52,6 +57,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - `src/hooks/useSummary.js` handles summary metrics fetching.
 - `src/hooks/useAuth.js` and `src/context/AuthContext.jsx` manage session state.
 - `src/components/AddItemForm.jsx`, `src/components/SummaryBar.jsx`, `src/components/SortControls.jsx`, and `src/components/ItemCard.jsx` provide reusable inventory UI building blocks.
+- `src/components/HelpModal.jsx` provides in-app guidance for sorting, color meaning, add flow, and delete confirmation behavior.
 
 ## Quick Start
 1. Go to the backend directory.
@@ -98,7 +104,7 @@ Frontend stack includes Vite + React, Tailwind CSS v4, React Router DOM v7, Axio
 
 The backend currently includes a FoodItem model with the following behavior:
 
-- Required fields: id, name, quantity, expiry_date, created_at, updated_at.
+- Required fields: id, user, name, quantity, expiry_date, created_at, updated_at.
 - Validation rule: expiry_date must not be earlier than today.
 - Computed properties:
   - days_until_expiry: integer days left until expiration.
@@ -109,9 +115,9 @@ The backend currently includes a FoodItem model with the following behavior:
 
 FoodItem is available in Django Admin with operational inventory tooling:
 
-- Changelist columns: name, quantity, expiry date, days until expiry, near-expiry status, created timestamp.
-- Filter: by expiry date.
-- Search: by item name.
+- Changelist columns: name, user, quantity, expiry date, days until expiry, near-expiry status, created timestamp.
+- Filter: by expiry date and owner.
+- Search: by item name and owner username.
 - Ordering: earliest expiry date first.
 - Read-only audit fields: created_at, updated_at.
 - Near-expiry visualization: red highlighted values for items close to expiry.
@@ -134,6 +140,7 @@ FoodItem is available in Django Admin with operational inventory tooling:
 
 ## Security Notes
 - API endpoints now require authenticated access by default.
+- Inventory data is isolated by authenticated user ownership at query level.
 - Local admin credentials are stored in .md.local for this machine only.
 - .md.local is gitignored and must never be committed.
 

@@ -15,6 +15,7 @@ The inventory app currently includes:
 FoodItem schema and rules:
 
 - id: AutoField primary key
+- user: ForeignKey to authenticated owner (required)
 - name: CharField(max_length=255), required
 - quantity: PositiveIntegerField, required (>= 0)
 - expiry_date: DateField, required
@@ -27,9 +28,9 @@ FoodItem schema and rules:
 FoodItem Django Admin configuration:
 
 - Registered with a custom ModelAdmin.
-- list_display: name, quantity, expiry_date, days_until_expiry, is_near_expiry, created_at.
-- list_filter: expiry_date.
-- search_fields: name.
+- list_display: name, user, quantity, expiry_date, days_until_expiry, is_near_expiry, created_at.
+- list_filter: expiry_date, user.
+- search_fields: name, user__username.
 - ordering: expiry_date ascending.
 - readonly_fields: created_at, updated_at.
 - Near-expiry column is rendered with HTML color highlighting for fast visual identification.
@@ -38,6 +39,7 @@ FoodItem API endpoints:
 
 - Base path: /api/items/
 - Full CRUD available through DRF ModelViewSet.
+- All item endpoints are scoped to the authenticated user owner.
 - Sorting options:
    - /api/items/?sort=name
    - /api/items/?sort=quantity
@@ -52,9 +54,11 @@ FoodItem API endpoints:
    - /api/auth/logout/ (POST): ends authenticated session
    - /api/auth/session/ (GET): returns current authenticated user session state
 - Model-level validation is enforced during create and update via full_clean().
+- New items are always created with `request.user` as the owner.
 - Security defaults:
    - CSRF middleware is active.
    - DRF defaults require authentication for API access.
+   - Queryset-level ownership filtering prevents cross-user item access.
    - A custom exception handler returns consistent error JSON.
    - Security headers include XSS filter, frame deny, and no-sniff.
 

@@ -15,6 +15,11 @@ This part documents the `FoodItemSerializer` implementation for API request/resp
   - Source: model primary key
   - Access: read-only in API responses
 
+- `user`
+  - Type: foreign key (owner)
+  - Access: server-controlled (not writable from client payload)
+  - Behavior: assigned from authenticated session during create
+
 - `name`
   - Type: string
   - Access: writable
@@ -71,6 +76,7 @@ This part documents the `FoodItemSerializer` implementation for API request/resp
 Expected behavior:
 - Request is accepted.
 - `name` is normalized to `"Brown Rice"`.
+- Ownership is automatically set to the authenticated user.
 - Read-only fields (`id`, timestamps, computed fields) are returned by API output, not required in input.
 
 ### Invalid Request: Past Expiry Date

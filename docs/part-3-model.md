@@ -9,6 +9,7 @@ The FoodItem model represents inventory entries in the Zero-Waste Pantry Manager
 ```python
 class FoodItem(models.Model):
     id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='food_items')
     name = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField()
     expiry_date = models.DateField()
@@ -19,6 +20,7 @@ class FoodItem(models.Model):
 ## Fields and Constraints
 
 - id: AutoField, primary key, unique and auto-incremented.
+- user: ForeignKey(User), required owner reference for per-account inventory isolation.
 - name: CharField(max_length=255), required (NOT NULL).
 - quantity: PositiveIntegerField, required (NOT NULL), constrained to values >= 0 by field type validation.
 - expiry_date: DateField, required (NOT NULL).
@@ -39,6 +41,12 @@ These rules support proactive waste reduction by identifying items that need urg
 
 - Meta ordering: ['expiry_date'] so soonest-expiring items appear first by default.
 - __str__: Human-readable text including item name and quantity.
+
+## Ownership and Data Isolation
+
+Each FoodItem belongs to exactly one authenticated user through the `user` foreign key.
+This relationship is the basis for API-level data isolation: users can only list, retrieve,
+update, and delete their own inventory entries.
 
 ## Normalization Compliance (3NF)
 

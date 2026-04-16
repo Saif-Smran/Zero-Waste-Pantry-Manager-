@@ -60,6 +60,19 @@ This document records security controls implemented in the Django Zero-Waste Pan
   - REQ-7, REQ-8, REQ-13 (input length and format validation).
   - SRS Section 5.3 - Security Requirements: The system shall validate and sanitize all user inputs.
 
+### 6) Per-user inventory data isolation
+- Implementation:
+  - FoodItem model includes an owner foreign key (`user`).
+  - API queryset logic filters records by `request.user`.
+  - Create operations assign owner from authenticated session.
+  - Summary and near-expiry actions are computed from the same user-scoped queryset.
+- Files:
+  - Backend/pantry_manager/inventory/models.py
+  - Backend/pantry_manager/inventory/views.py
+- SRS mapping:
+  - SRS Section 5.3 - Security Requirements: access to protected data shall be restricted to authorized users.
+  - SRS Section 5.4 - Reliability and Security quality attributes.
+
 ## Related Existing Security Mechanisms
 These were already present and remain aligned with SRS security intent:
 - SQL injection prevention via Django ORM query patterns.

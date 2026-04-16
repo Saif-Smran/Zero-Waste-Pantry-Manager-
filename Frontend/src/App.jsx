@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
+import { RiQuestionLine } from 'react-icons/ri'
 import InventoryPage from './pages/InventoryPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import HelpModal from './components/HelpModal'
 import useAuth from './hooks/useAuth'
 
 function ProtectedRoute({ children }) {
@@ -23,6 +25,7 @@ function ProtectedRoute({ children }) {
 
 function App() {
   const { isAuthenticated, logout } = useAuth()
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
 
   const handleLogout = async () => {
     await logout()
@@ -34,18 +37,27 @@ function App() {
         <nav className="w-full bg-gray-900 text-white flex justify-between items-center px-6 py-4">
           <h1 className="font-bold text-xl">Zero-Waste Pantry Manager</h1>
           {isAuthenticated && (
-            <button
-              type="button"
-              className="bg-white text-gray-900 text-sm px-3 py-1 rounded hover:bg-gray-100 transition"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="flex items-center gap-1 bg-white text-gray-900 text-sm px-3 py-1 rounded hover:bg-gray-100 transition"
+                onClick={() => setIsHelpOpen(true)}
+              >
+                <RiQuestionLine size={16} />
+                Help
+              </button>
+              <button
+                type="button"
+                className="bg-white text-gray-900 text-sm px-3 py-1 rounded hover:bg-gray-100 transition"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
           )}
         </nav>
 
         <main className="bg-pantry-bg min-h-screen">
-          <Toaster position="top-right" />
           <Routes>
             <Route
               path="/"
@@ -59,6 +71,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
           </Routes>
         </main>
+        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       </div>
     </BrowserRouter>
   )

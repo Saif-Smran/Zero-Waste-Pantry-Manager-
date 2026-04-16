@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import AddItemForm from '../components/AddItemForm'
 import ItemCard from '../components/ItemCard'
 import SortControls from '../components/SortControls'
@@ -19,28 +20,49 @@ function InventoryPage() {
     setSummaryRefreshKey((prev) => prev + 1)
   }
 
-  const handleDecrement = async (item) => {
+  const getCsrfToken = () => {
+    const tokenMatch = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/)
+    return tokenMatch ? decodeURIComponent(tokenMatch[1]) : ''
+  }
+
+  const handleDecrement = async (itemId) => {
+    const currentItem = items.find((item) => item.id === itemId)
+
+    if (!currentItem || currentItem.quantity === 0) {
+      return
+    }
+
     try {
-      if (item.quantity <= 1) {
-        await api.delete(`/api/items/${item.id}/`)
-      } else {
-        await api.patch(`/api/items/${item.id}/`, {
-          quantity: item.quantity - 1,
-        })
-      }
+      await api.patch(
+        `/api/items/${itemId}/`,
+        {
+          quantity: currentItem.quantity - 1,
+        },
+        {
+          headers: {
+            'X-CSRFToken': getCsrfToken(),
+          },
+        },
+      )
 
       await refreshAll()
+      toast.success('Quantity updated')
     } catch {
-      // useInventory error state reflects refetch failures; mutations are silently ignored on failure.
+      toast.error('Failed to update quantity')
     }
   }
 
   const handleDelete = async (itemId) => {
     try {
-      await api.delete(`/api/items/${itemId}/`)
+      await api.delete(`/api/items/${itemId}/`, {
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+        },
+      })
       await refreshAll()
+      toast.success('Item deleted')
     } catch {
-      // useInventory error state reflects refetch failures; mutations are silently ignored on failure.
+      toast.error('Failed to delete item')
     }
   }
 
@@ -54,7 +76,7 @@ function InventoryPage() {
         <SummaryBar summary={summary} />
       )}
 
-      <AddItemForm onSuccess={refetch} />
+      <AddItemForm onSuccess={refreshAll} />
 
       <SortControls currentSort={sortParam} onSortChange={setSortParam} />
 

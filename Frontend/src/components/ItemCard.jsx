@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import { RiDeleteBin6Line } from 'react-icons/ri'
 
 function getExpiryClass(daysUntilExpiry) {
   if (daysUntilExpiry <= 3) {
@@ -33,6 +34,7 @@ function formatExpiryDate(dateString) {
 function ItemCard({ item, onDecrement, onDelete }) {
   const expiryClasses = getExpiryClass(item.days_until_expiry)
   const isExpired = item.days_until_expiry <= 0
+  const isDecrementDisabled = item.quantity === 0
 
   return (
     <div className={clsx('bg-white rounded-xl shadow-sm p-4 border-l-4', expiryClasses.border)}>
@@ -51,21 +53,32 @@ function ItemCard({ item, onDecrement, onDelete }) {
           : `${item.days_until_expiry} day(s) remaining`}
       </p>
 
-      <p className="text-sm text-gray-600 mt-2">Qty: {item.quantity}</p>
-
-      <div className="mt-4 flex gap-2">
+      <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => onDecrement(item.id)}
+            disabled={isDecrementDisabled}
+            className={clsx(
+              'flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition',
+              isDecrementDisabled && 'opacity-40 cursor-not-allowed',
+            )}
+          >
+            -
+          </button>
+          <span className="text-sm text-gray-600">Qty: {item.quantity}</span>
+        </div>
         <button
           type="button"
-          onClick={() => onDecrement(item)}
-          className="bg-gray-900 text-white rounded-lg px-3 py-1.5 text-sm font-medium"
+          onClick={() => {
+            const confirmed = window.confirm(`Are you sure you want to delete ${item.name}?`)
+            if (confirmed) {
+              onDelete(item.id)
+            }
+          }}
+          className="flex items-center gap-1 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-lg text-sm transition"
         >
-          Decrement
-        </button>
-        <button
-          type="button"
-          onClick={() => onDelete(item.id)}
-          className="bg-white text-gray-700 border border-gray-300 rounded-lg px-3 py-1.5 text-sm hover:bg-gray-50"
-        >
+          <RiDeleteBin6Line size={16} />
           Delete
         </button>
       </div>

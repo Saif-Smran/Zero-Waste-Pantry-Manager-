@@ -35,7 +35,9 @@ The inventory list page is implemented in `src/pages/InventoryPage.jsx` and comp
 - `src/components/ItemCard.jsx` - inventory item card with:
 	- Expiry-based left border and status color
 	- `EXPIRED` badge for expired items
-	- Quantity display and decrement/delete actions
+	- Quantity display and decrement action button (`-`) that disables at quantity 0
+	- Delete action with confirmation prompt before removal
+	- Toast feedback after decrement and delete actions
 - `src/components/AddItemForm.jsx` - add new pantry item using item name, quantity, and expiry date.
 	- Card layout: `bg-white rounded-xl shadow-sm p-6 mb-6`
 	- Form layout: `grid grid-cols-1 sm:grid-cols-3 gap-4 items-end`
@@ -48,13 +50,19 @@ The inventory list page is implemented in `src/pages/InventoryPage.jsx` and comp
 	- On `201 Created`, triggers parent `onSuccess` callback (inventory refetch), then resets form
 	- On `400`, maps API field errors to inline field errors
 	- Uses `react-hot-toast` for success/general error feedback
+- `src/components/HelpModal.jsx` - overlay modal with:
+	- Sorting explanation
+	- Expiry color legend
+	- Step-by-step add-item instructions
+	- Delete behavior explanation
 
 ### Auth Pages and Routing
 - `src/pages/LoginPage.jsx` - username/password login screen.
 - `src/pages/RegisterPage.jsx` - account creation screen.
 - `src/App.jsx` protects the inventory route and redirects unauthenticated users to login.
+- `src/App.jsx` includes an authenticated navbar Help button and renders the Help modal.
 - `src/context/AuthContext.jsx` restores session on app startup.
-- `src/App.jsx` includes `Toaster` host for toast notifications.
+- `src/main.jsx` includes the global `Toaster` host (bottom-right) for toast notifications.
 
 ### Sort Values
 - By Expiry -> `expiry`
@@ -112,3 +120,4 @@ npm run dev
 ## Troubleshooting
 - `npm run dev` must be run inside the `Frontend` folder.
 - If you run it from backend folders, npm cannot find `package.json` and exits with ENOENT.
+- If toasts do not appear, ensure `react-hot-toast` is installed and that `src/main.jsx` renders `<Toaster position="bottom-right" />`.

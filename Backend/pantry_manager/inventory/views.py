@@ -133,21 +133,25 @@ def session_user(request):
 
 class FoodItemViewSet(ModelViewSet):
     serializer_class = FoodItemSerializer
-    queryset = FoodItem.objects.order_by("expiry_date")
+    queryset = FoodItem.objects.all()
 
     def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return FoodItem.objects.none()
+
+        queryset = FoodItem.objects.filter(user=self.request.user)
         sort = self.request.query_params.get("sort")
 
         if sort == "name":
-            return FoodItem.objects.order_by("name")
+            return queryset.order_by("name")
         if sort == "quantity":
-            return FoodItem.objects.order_by("quantity")
-        return FoodItem.objects.order_by("expiry_date")
+            return queryset.order_by("quantity")
+        return queryset.order_by("expiry_date")
 
     def perform_create(self, serializer):
-        instance = FoodItem(**serializer.validated_data)
+        instance = FoodItem(user=self.request.user, **serializer.validated_data)
         instance.full_clean()
-        serializer.save()
+        serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
         instance = serializer.instance
@@ -168,7 +172,7 @@ class FoodItemViewSet(ModelViewSet):
     def summary(self, request):
         today = timezone.localdate()
         threshold = today + timedelta(days=3)
-        base_queryset = FoodItem.objects.all()
+        base_queryset = self.get_queryset()
 
         data = {
             "total_items": base_queryset.count(),

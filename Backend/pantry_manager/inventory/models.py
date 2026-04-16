@@ -1,6 +1,10 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
 from django.utils import timezone
+
+
+User = get_user_model()
 
 class ConnectionCheck(models.Model):
     name = models.CharField(max_length=100, default='db-check')
@@ -12,6 +16,7 @@ class ConnectionCheck(models.Model):
 
 class FoodItem(models.Model):
     id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='food_items')
     name = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField()
     expiry_date = models.DateField()
