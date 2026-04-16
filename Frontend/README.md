@@ -9,6 +9,7 @@ React frontend for Zero-Waste Pantry Manager, built with Vite.
 - Axios
 - React Icons
 - clsx
+- react-hot-toast
 
 ## Inventory List View
 
@@ -36,12 +37,24 @@ The inventory list page is implemented in `src/pages/InventoryPage.jsx` and comp
 	- `EXPIRED` badge for expired items
 	- Quantity display and decrement/delete actions
 - `src/components/AddItemForm.jsx` - add new pantry item using item name, quantity, and expiry date.
+	- Card layout: `bg-white rounded-xl shadow-sm p-6 mb-6`
+	- Form layout: `grid grid-cols-1 sm:grid-cols-3 gap-4 items-end`
+	- Inline validation errors per field (name, quantity, expiry_date)
+	- Client-side validation:
+		- Name is required
+		- Quantity must be a positive integer
+		- Expiry date cannot be in the past
+	- Submit state disables Clear/Add buttons and shows `Adding...`
+	- On `201 Created`, triggers parent `onSuccess` callback (inventory refetch), then resets form
+	- On `400`, maps API field errors to inline field errors
+	- Uses `react-hot-toast` for success/general error feedback
 
 ### Auth Pages and Routing
 - `src/pages/LoginPage.jsx` - username/password login screen.
 - `src/pages/RegisterPage.jsx` - account creation screen.
 - `src/App.jsx` protects the inventory route and redirects unauthenticated users to login.
 - `src/context/AuthContext.jsx` restores session on app startup.
+- `src/App.jsx` includes `Toaster` host for toast notifications.
 
 ### Sort Values
 - By Expiry -> `expiry`

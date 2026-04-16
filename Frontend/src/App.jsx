@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import InventoryPage from './pages/InventoryPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -44,6 +45,7 @@ function App() {
         </nav>
 
         <main className="bg-pantry-bg min-h-screen">
+          <Toaster position="top-right" />
           <Routes>
             <Route
               path="/"

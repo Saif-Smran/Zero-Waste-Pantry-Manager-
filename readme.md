@@ -18,7 +18,14 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - Frontend item cards include expiry-status color coding and expired badge labeling.
 - Session-based authentication is implemented (register, login, logout, session check).
 - Inventory routes are protected in frontend and require authenticated session.
-- Frontend includes add-item form for creating inventory items from the UI.
+- Frontend includes add-item form for creating inventory items from the UI with inline field validation.
+- Add-item form now validates client-side before submit:
+  - Item name is required.
+  - Quantity must be a positive integer.
+  - Expiry date cannot be in the past.
+- Add-item submission disables Clear/Add buttons and shows `Adding...` while request is in progress.
+- On successful create (201), frontend refetches inventory and resets the form.
+- react-hot-toast is integrated in frontend for immediate success/error feedback.
 - Security hardening added in backend settings and API error handling:
   - Active CSRF middleware.
   - DRF default authentication and permission classes (authenticated-only by default).
@@ -36,7 +43,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - Database: PostgreSQL (Railway)
 - Config and Environment: python-decouple
 - API Access: django-cors-headers
-- Frontend: Vite + React, Tailwind CSS v4, React Router DOM v7, Axios, React Icons, clsx
+- Frontend: Vite + React, Tailwind CSS v4, React Router DOM v7, Axios, React Icons, clsx, react-hot-toast
 
 ## Frontend Architecture
 - `src/pages/InventoryPage.jsx` composes the inventory list experience.

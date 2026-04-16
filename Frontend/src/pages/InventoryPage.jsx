@@ -54,7 +54,7 @@ function InventoryPage() {
         <SummaryBar summary={summary} />
       )}
 
-      <AddItemForm onItemCreated={refreshAll} />
+      <AddItemForm onSuccess={refetch} />
 
       <SortControls currentSort={sortParam} onSortChange={setSortParam} />
 
