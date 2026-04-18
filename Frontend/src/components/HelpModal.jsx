@@ -56,15 +56,15 @@ function HelpModal({ isOpen, onClose }) {
           Color Guide
         </h3>
         <div className="flex items-center gap-3 mb-2">
-          <span className="w-4 h-4 rounded shrink-0 bg-safe" />
+          <span className="w-4 h-4 rounded flex-shrink-0 bg-[#2e7d32]" />
           <span className="text-sm text-gray-600">More than 7 days remaining</span>
         </div>
         <div className="flex items-center gap-3 mb-2">
-          <span className="w-4 h-4 rounded shrink-0 bg-warning" />
+          <span className="w-4 h-4 rounded flex-shrink-0 bg-[#e65100]" />
           <span className="text-sm text-gray-600">Expiring within 7 days</span>
         </div>
         <div className="flex items-center gap-3 mb-2">
-          <span className="w-4 h-4 rounded shrink-0 bg-danger" />
+          <span className="w-4 h-4 rounded flex-shrink-0 bg-[#c62828]" />
           <span className="text-sm text-gray-600">Expiring within 3 days or already expired</span>
         </div>
 

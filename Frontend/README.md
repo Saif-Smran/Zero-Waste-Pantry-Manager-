@@ -52,9 +52,17 @@ The inventory list page is implemented in `src/pages/InventoryPage.jsx` and comp
 	- Uses `react-hot-toast` for success/general error feedback
 - `src/components/HelpModal.jsx` - overlay modal with:
 	- Sorting explanation
-	- Expiry color legend
+	- Expiry color legend:
+		- Green: More than 7 days remaining
+		- Orange: Expiring within 7 days
+		- Red: Expiring within 3 days or already expired
 	- Step-by-step add-item instructions
 	- Delete behavior explanation
+	- Close interactions:
+		- Escape key closes modal
+		- Overlay click closes modal
+		- Close button (top-right) closes modal
+	- Scrollable content area for smaller screens (`max-h-[80vh] overflow-y-auto`)
 
 ### Auth Pages and Routing
 - `src/pages/LoginPage.jsx` - username/password login screen.

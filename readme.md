@@ -30,7 +30,8 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - On successful create (201), frontend refetches inventory and resets the form.
 - react-hot-toast is integrated in frontend for immediate success/error feedback.
 - Global toast host is mounted in `src/main.jsx` with bottom-right positioning.
-- Help modal is available from the authenticated navbar with sorting guidance and color legend.
+- Help modal is available from the authenticated navbar with in-app guidance for sorting, color meaning, adding items, and deleting items.
+- Help modal supports closing by Escape key, overlay click, or top-right close button.
 - Security hardening added in backend settings and API error handling:
   - Active CSRF middleware.
   - DRF default authentication and permission classes (authenticated-only by default).
