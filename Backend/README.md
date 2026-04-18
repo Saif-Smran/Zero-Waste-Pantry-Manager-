@@ -110,6 +110,10 @@ Set these in Backend/.env:
 - CORS_ALLOWED_ORIGINS (optional, defaults include local Vite origins)
 - CSRF_TRUSTED_ORIGINS (optional, defaults include local Vite origins)
 
+Production note:
+- On Railway, set variables in Shared Variables. The app reads process environment directly when `Backend/.env` is not present.
+- Keep `Backend/.env` for local development only.
+
 ## Railway PostgreSQL Guidance
 - For local development, use Railway public proxy host and port, or DATABASE_PUBLIC_URL.
 - Railway private hostname values are not reachable from local machines.
