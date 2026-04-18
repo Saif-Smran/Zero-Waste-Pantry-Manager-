@@ -28,3 +28,4 @@ Frontend/.env.*.local
 
 # Local password files
 *.local.md
+deploy.md
