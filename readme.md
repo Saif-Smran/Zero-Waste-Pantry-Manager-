@@ -37,6 +37,7 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
   - Security headers for XSS, clickjacking, and content-type sniff protection.
   - Consistent JSON error format for API failures.
   - Serializer input length validation for item name.
+- Inventory API unit tests are implemented for create, list/sort, update, delete, near-expiry, summary, and user data isolation.
 
 ## Repository Structure
 - Backend: Django API and data layer
@@ -137,6 +138,7 @@ FoodItem is available in Django Admin with operational inventory tooling:
 - API views and endpoints: [docs/part-6-api-views.md](docs/part-6-api-views.md)
 - URL routing and endpoint map: [docs/part-7-urls.md](docs/part-7-urls.md)
 - Security implementation and SRS mapping: [docs/part-8-security.md](docs/part-8-security.md)
+- Inventory API unit tests and coverage matrix: [docs/part-13-tests.md](docs/part-13-tests.md)
 
 ## Security Notes
 - API endpoints now require authenticated access by default.
