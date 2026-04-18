@@ -38,6 +38,46 @@ DEBUG = env('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = env('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
 
+def _build_default_csrf_trusted_origins(hosts):
+    origins = []
+    for host in hosts:
+        host = str(host).strip()
+        if not host or host.startswith('.') or '*' in host:
+            continue
+        if host.startswith('http://') or host.startswith('https://'):
+            origins.append(host)
+            continue
+        if host in ('localhost', '127.0.0.1'):
+            origins.append(f'http://{host}')
+        else:
+            origins.append(f'https://{host}')
+    return origins
+
+
+def _merge_unique_csv(primary, fallback):
+    seen = set()
+    merged = []
+
+    def _normalize_origin(value):
+        parsed = urlparse(value)
+        if parsed.scheme and parsed.netloc:
+            return f'{parsed.scheme}://{parsed.netloc}'
+        return value.rstrip('/')
+
+    for value in [*primary, *fallback]:
+        value = str(value).strip()
+        if not value or value in seen:
+            continue
+        value = _normalize_origin(value)
+        if not value:
+            continue
+        if value in seen:
+            continue
+        seen.add(value)
+        merged.append(value)
+    return merged
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -180,15 +220,17 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = env(
-    'CORS_ALLOWED_ORIGINS',
-    default='http://localhost:5173,http://127.0.0.1:5173',
-    cast=Csv(),
+CORS_ALLOWED_ORIGINS = _merge_unique_csv(
+    env(
+        'CORS_ALLOWED_ORIGINS',
+        default='http://localhost:5173,http://127.0.0.1:5173',
+        cast=Csv(),
+    ),
+    _build_default_csrf_trusted_origins(ALLOWED_HOSTS),
 )
-CSRF_TRUSTED_ORIGINS = env(
-    'CSRF_TRUSTED_ORIGINS',
-    default='http://localhost:5173,http://127.0.0.1:5173',
-    cast=Csv(),
+CSRF_TRUSTED_ORIGINS = _merge_unique_csv(
+    env('CSRF_TRUSTED_ORIGINS', default='', cast=Csv()),
+    _build_default_csrf_trusted_origins(ALLOWED_HOSTS),
 )
 
 SECURE_BROWSER_XSS_FILTER = True
