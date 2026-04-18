@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import api from '../services/api'
+import api, { authApi, isAuthExpiredError } from '../services/api'
 
 const DEFAULT_SUMMARY = {
   total_items: 0,
@@ -16,7 +16,30 @@ function useSummary(refreshKey = 0) {
       setLoading(true)
 
       try {
-        const response = await api.get('/api/items/summary/')
+        let response
+
+        try {
+          response = await api.get('/api/items/summary/')
+        } catch (err) {
+          const statusCode = err?.response?.status
+          const authError = isAuthExpiredError(err) || statusCode === 401 || statusCode === 403
+
+          if (!authError) {
+            throw err
+          }
+
+          await new Promise((resolve) => {
+            setTimeout(resolve, 200)
+          })
+
+          const sessionResponse = await authApi.session()
+          if (!sessionResponse?.data?.user) {
+            throw err
+          }
+
+          response = await api.get('/api/items/summary/')
+        }
+
         setSummary(response.data)
       } catch {
         setSummary(DEFAULT_SUMMARY)

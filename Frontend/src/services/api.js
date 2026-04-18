@@ -1,26 +1,43 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const explicitApiBaseUrl = String(import.meta.env.VITE_API_URL || '').trim()
+const API_BASE_URL = explicitApiBaseUrl || ''
+
+class AuthExpiredError extends Error {
+  constructor(message = 'Your session has expired. Please log in again.', cause = null) {
+    super(message)
+    this.name = 'AuthExpiredError'
+    this.isAuthExpired = true
+    this.cause = cause
+  }
+}
+
+export const isAuthExpiredError = (error) => Boolean(error?.isAuthExpired)
 
 let csrfTokenCache = ''
+
+const readCsrfTokenFromCookie = () => {
+  if (typeof document === 'undefined') {
+    return ''
+  }
+
+  const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : ''
+}
 
 export const setCsrfToken = (token) => {
   csrfTokenCache = typeof token === 'string' ? token : ''
 }
 
 export const getCsrfToken = () => {
-  if (csrfTokenCache) {
-    return csrfTokenCache
+  const cookieToken = readCsrfTokenFromCookie()
+
+  if (cookieToken) {
+    csrfTokenCache = cookieToken
+    return cookieToken
   }
 
-  const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/)
-  const token = match ? decodeURIComponent(match[1]) : ''
-
-  if (token) {
-    csrfTokenCache = token
-  }
-
-  return token
+  return csrfTokenCache
 }
 
 let csrfBootstrapPromise = null
@@ -31,8 +48,12 @@ export const ensureCsrfCookie = async () => {
   }
 
   if (!csrfBootstrapPromise) {
+    const csrfEndpoint = API_BASE_URL
+      ? `${API_BASE_URL.replace(/\/$/, '')}/api/auth/csrf/`
+      : '/api/auth/csrf/'
+
     csrfBootstrapPromise = axios
-      .get(`${API_BASE_URL.replace(/\/$/, '')}/api/auth/csrf/`, {
+      .get(csrfEndpoint, {
         withCredentials: true,
       })
       .finally(() => {
@@ -54,6 +75,8 @@ const api = axios.create({
 })
 
 api.interceptors.request.use(async (config) => {
+  config.withCredentials = true
+
   const method = (config.method || 'get').toLowerCase()
   const requiresCsrf = ['post', 'put', 'patch', 'delete'].includes(method)
 
@@ -72,6 +95,12 @@ api.interceptors.request.use(async (config) => {
 
 api.interceptors.response.use(
   (response) => {
+    const cookieToken = readCsrfTokenFromCookie()
+    if (cookieToken) {
+      setCsrfToken(cookieToken)
+      return response
+    }
+
     const nextToken = response?.data?.csrf_token
     if (typeof nextToken === 'string' && nextToken) {
       setCsrfToken(nextToken)
@@ -86,6 +115,7 @@ api.interceptors.response.use(
 
     if ((statusCode === 401 || statusCode === 403) && !isAuthEndpoint && typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('auth:expired'))
+      return Promise.reject(new AuthExpiredError(undefined, error))
     }
 
     return Promise.reject(error)
@@ -93,7 +123,10 @@ api.interceptors.response.use(
 )
 
 export const authApi = {
-  session: () => api.get('/api/auth/session/'),
+  session: () =>
+    api.get('/api/auth/session/', {
+      params: { _: Date.now() },
+    }),
   login: (payload) => api.post('/api/auth/login/', payload),
   register: (payload) => api.post('/api/auth/register/', payload),
   logout: () => api.post('/api/auth/logout/'),

@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.db.models import Count, Q
 from django.middleware.csrf import get_token
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -120,6 +121,7 @@ def login_user(request):
 
 
 @api_view(["POST"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def logout_user(request):
     if request.user.is_authenticated:
@@ -128,6 +130,7 @@ def logout_user(request):
 
 
 @api_view(["GET"])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def session_user(request):
     if not request.user.is_authenticated:
@@ -154,7 +157,7 @@ class FoodItemViewSet(ModelViewSet):
         if not self.request.user.is_authenticated:
             return FoodItem.objects.none()
 
-        queryset = FoodItem.objects.filter(user=self.request.user)
+        queryset = FoodItem.objects.filter(user=self.request.user).select_related("user")
         sort = self.request.query_params.get("sort")
 
         if sort == "name":
@@ -189,12 +192,12 @@ class FoodItemViewSet(ModelViewSet):
         threshold = today + timedelta(days=3)
         base_queryset = self.get_queryset()
 
-        data = {
-            "total_items": base_queryset.count(),
-            "near_expiry_count": base_queryset.filter(
-                expiry_date__gte=today,
-                expiry_date__lte=threshold,
-            ).count(),
-            "expired_count": base_queryset.filter(expiry_date__lt=today).count(),
-        }
+        data = base_queryset.aggregate(
+            total_items=Count("id"),
+            near_expiry_count=Count(
+                "id",
+                filter=Q(expiry_date__gte=today, expiry_date__lte=threshold),
+            ),
+            expired_count=Count("id", filter=Q(expiry_date__lt=today)),
+        )
         return Response(data)

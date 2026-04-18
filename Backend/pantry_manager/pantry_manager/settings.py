@@ -95,7 +95,6 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -157,20 +156,32 @@ def _first_real_env(names, default=''):
 
 
 
-DATABASES = {
+USE_LOCAL_SQLITE = env('USE_LOCAL_SQLITE', default=False, cast=bool)
+
+if USE_LOCAL_SQLITE:
+    DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': _first_real_env(['DB_NAME', 'PGDATABASE', 'POSTGRES_DB'], default='pantry_manager'),
-            'USER': _first_real_env(['DB_USER', 'PGUSER', 'POSTGRES_USER'], default='postgres'),
-            'PASSWORD': _first_real_env(['DB_PASSWORD', 'PGPASSWORD', 'POSTGRES_PASSWORD'], default=''),
-            'HOST': _first_real_env(['RAILWAY_TCP_PROXY_DOMAIN', 'DB_HOST', 'PGHOST'], default='localhost'),
-            'PORT': _first_real_env(['RAILWAY_TCP_PROXY_PORT', 'DB_PORT', 'PGPORT'], default='5432'),
-            'OPTIONS': {
-                'sslmode': env('DB_SSLMODE', default='require'),
-                'connect_timeout': env('DB_CONNECT_TIMEOUT', default=10, cast=int),
-            },
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+else:
+    DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': _first_real_env(['DB_NAME', 'PGDATABASE', 'POSTGRES_DB'], default='pantry_manager'),
+                'USER': _first_real_env(['DB_USER', 'PGUSER', 'POSTGRES_USER'], default='postgres'),
+                'PASSWORD': _first_real_env(['DB_PASSWORD', 'PGPASSWORD', 'POSTGRES_PASSWORD'], default=''),
+                'HOST': _first_real_env(['RAILWAY_TCP_PROXY_DOMAIN', 'DB_HOST', 'PGHOST'], default='localhost'),
+                'PORT': _first_real_env(['RAILWAY_TCP_PROXY_PORT', 'DB_PORT', 'PGPORT'], default='5432'),
+                'CONN_MAX_AGE': env('DB_CONN_MAX_AGE', default=600, cast=int),
+                'CONN_HEALTH_CHECKS': env('DB_CONN_HEALTH_CHECKS', default=True, cast=bool),
+                'OPTIONS': {
+                    'sslmode': env('DB_SSLMODE', default='require'),
+                    'connect_timeout': env('DB_CONNECT_TIMEOUT', default=10, cast=int),
+                },
+            }
+        }
 
 
 # Password validation

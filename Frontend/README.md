@@ -116,7 +116,12 @@ npm run dev
 	- `pantry-bg`, `pantry-card`
 
 ## Environment Variable
-- `VITE_API_URL` (example: `http://localhost:8000`)
+- `VITE_API_URL` (optional in local dev, required when production frontend and backend are on different origins)
+
+API resolution behavior:
+- Local development defaults to same-origin `/api` requests and uses Vite proxy to `http://localhost:8000`.
+- Production uses `VITE_API_URL` when set.
+- If `VITE_API_URL` is not set, requests use same-origin `/api`.
 
 ## Auth API Endpoints Used by Frontend
 - `GET /api/auth/csrf/`

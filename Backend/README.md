@@ -106,6 +106,9 @@ Set these in Backend/.env:
 - DB_PORT
 - DB_SSLMODE
 - DB_CONNECT_TIMEOUT
+- DB_CONN_MAX_AGE (optional, default 600 for PostgreSQL connection reuse)
+- DB_CONN_HEALTH_CHECKS (optional, default true)
+- USE_LOCAL_SQLITE (optional, set true for faster local development profile)
 - TIME_ZONE (optional, overrides OS-detected local timezone)
 - CORS_ALLOWED_ORIGINS (optional, defaults include local Vite origins)
 - CSRF_TRUSTED_ORIGINS (optional, defaults include local Vite origins)
@@ -113,6 +116,10 @@ Set these in Backend/.env:
 Production note:
 - On Railway, set variables in Shared Variables. The app reads process environment directly when `Backend/.env` is not present.
 - Keep `Backend/.env` for local development only.
+
+Local performance note:
+- When `USE_LOCAL_SQLITE=true`, Django uses local SQLite for faster local auth/API iteration.
+- Keep `USE_LOCAL_SQLITE=false` (or unset) for PostgreSQL-compatible validation.
 
 ## Railway PostgreSQL Guidance
 - For local development, use Railway public proxy host and port, or DATABASE_PUBLIC_URL.

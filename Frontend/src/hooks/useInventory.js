@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import api from '../services/api'
+import api, { authApi, isAuthExpiredError } from '../services/api'
 
 function useInventory(sortParam) {
   const [items, setItems] = useState([])
@@ -10,15 +10,47 @@ function useInventory(sortParam) {
     setLoading(true)
     setError('')
 
-    try {
-      const response = await api.get('/api/items/', {
+    const requestItems = () =>
+      api.get('/api/items/', {
         params: { sort: sortParam },
       })
+
+    try {
+      let response
+
+      try {
+        response = await requestItems()
+      } catch (err) {
+        const statusCode = err?.response?.status
+        const authError = isAuthExpiredError(err) || statusCode === 401 || statusCode === 403
+
+        if (!authError) {
+          throw err
+        }
+
+        try {
+          await new Promise((resolve) => {
+            setTimeout(resolve, 200)
+          })
+
+          const sessionResponse = await authApi.session()
+          if (sessionResponse?.data?.user) {
+            response = await requestItems()
+          } else {
+            throw new Error('Session missing after auth retry')
+          }
+        } catch {
+          const expiredError = new Error('Auth session expired')
+          expiredError.isAuthExpired = true
+          throw expiredError
+        }
+      }
+
       setItems(response.data)
     } catch (err) {
-      const statusCode = err?.response?.status
-      if (statusCode === 401 || statusCode === 403) {
-        setError('Your session has expired. Please log in to view inventory items.')
+      if (isAuthExpiredError(err) || err?.isAuthExpired) {
+        setItems([])
+        setError('Your session has expired. Please log in again.')
         return
       }
 
