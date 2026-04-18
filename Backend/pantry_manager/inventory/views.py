@@ -124,12 +124,12 @@ def logout_user(request):
 @permission_classes([AllowAny])
 def session_user(request):
     if not request.user.is_authenticated:
-        return Response(
-            {"error": "Not authenticated.", "field": None},
-            status=status.HTTP_401_UNAUTHORIZED,
-        )
+        return Response({"user": None, "authenticated": False}, status=status.HTTP_200_OK)
 
-    return Response({"user": _serialize_user(request.user)}, status=status.HTTP_200_OK)
+    return Response(
+        {"user": _serialize_user(request.user), "authenticated": True},
+        status=status.HTTP_200_OK,
+    )
 
 
 class FoodItemViewSet(ModelViewSet):

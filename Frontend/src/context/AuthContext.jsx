@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
   const refreshSession = useCallback(async () => {
     try {
       const response = await authApi.session()
-      setUser(response.data.user)
+      setUser(response.data.user || null)
       return response.data.user
     } catch {
       setUser(null)
@@ -29,18 +29,36 @@ export function AuthProvider({ children }) {
   }, [refreshSession])
 
   const login = useCallback(async (username, password) => {
-    await authApi.login({ username, password })
-    const sessionResponse = await authApi.session()
-    setUser(sessionResponse.data.user)
-    toast.success(`Welcome back, ${sessionResponse.data.user.username}!`)
-    return sessionResponse.data.user
+    const response = await authApi.login({ username, password })
+    setUser(response.data.user)
+
+    try {
+      const sessionResponse = await authApi.session()
+      if (sessionResponse.data.user) {
+        setUser(sessionResponse.data.user)
+      }
+    } catch {
+      // Keep login successful even if session probe cannot confirm immediately.
+    }
+
+    toast.success(`Welcome back, ${response.data.user.username}!`)
+    return response.data.user
   }, [])
 
   const register = useCallback(async (username, password) => {
-    await authApi.register({ username, password })
-    const sessionResponse = await authApi.session()
-    setUser(sessionResponse.data.user)
-    return sessionResponse.data.user
+    const response = await authApi.register({ username, password })
+    setUser(response.data.user)
+
+    try {
+      const sessionResponse = await authApi.session()
+      if (sessionResponse.data.user) {
+        setUser(sessionResponse.data.user)
+      }
+    } catch {
+      // Keep register successful even if session probe cannot confirm immediately.
+    }
+
+    return response.data.user
   }, [])
 
   const logout = useCallback(async () => {
