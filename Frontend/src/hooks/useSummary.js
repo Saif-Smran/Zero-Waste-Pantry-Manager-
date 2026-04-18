@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import api, { authApi, isAuthExpiredError } from '../services/api'
+import useAuth from './useAuth'
+import api, { isAuthExpiredError } from '../services/api'
 
 const DEFAULT_SUMMARY = {
   total_items: 0,
@@ -8,40 +9,32 @@ const DEFAULT_SUMMARY = {
 }
 
 function useSummary(refreshKey = 0) {
+  const { isAuthenticated } = useAuth()
   const [summary, setSummary] = useState(DEFAULT_SUMMARY)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchSummary = async () => {
+      if (!isAuthenticated) {
+        setSummary(DEFAULT_SUMMARY)
+        setLoading(false)
+        return
+      }
+
       setLoading(true)
 
       try {
-        let response
+        const response = await api.get('/api/items/summary/')
+        setSummary(response.data)
+      } catch (err) {
+        const statusCode = err?.response?.status
+        const authError = isAuthExpiredError(err) || err?.isAuthExpired || statusCode === 401 || statusCode === 403
 
-        try {
-          response = await api.get('/api/items/summary/')
-        } catch (err) {
-          const statusCode = err?.response?.status
-          const authError = isAuthExpiredError(err) || statusCode === 401 || statusCode === 403
-
-          if (!authError) {
-            throw err
-          }
-
-          await new Promise((resolve) => {
-            setTimeout(resolve, 200)
-          })
-
-          const sessionResponse = await authApi.session()
-          if (!sessionResponse?.data?.user) {
-            throw err
-          }
-
-          response = await api.get('/api/items/summary/')
+        if (authError) {
+          setSummary(DEFAULT_SUMMARY)
+          return
         }
 
-        setSummary(response.data)
-      } catch {
         setSummary(DEFAULT_SUMMARY)
       } finally {
         setLoading(false)
@@ -49,7 +42,7 @@ function useSummary(refreshKey = 0) {
     }
 
     fetchSummary()
-  }, [refreshKey])
+  }, [isAuthenticated, refreshKey])
 
   return {
     summary,

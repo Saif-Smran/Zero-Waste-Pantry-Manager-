@@ -121,7 +121,6 @@ def login_user(request):
 
 
 @api_view(["POST"])
-@authentication_classes([])
 @permission_classes([AllowAny])
 def logout_user(request):
     if request.user.is_authenticated:
@@ -130,7 +129,6 @@ def logout_user(request):
 
 
 @api_view(["GET"])
-@authentication_classes([])
 @permission_classes([AllowAny])
 def session_user(request):
     if not request.user.is_authenticated:

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const explicitApiBaseUrl = String(import.meta.env.VITE_API_URL || '').trim()
-const API_BASE_URL = explicitApiBaseUrl || ''
+const API_BASE_URL = explicitApiBaseUrl ? explicitApiBaseUrl.replace(/\/$/, '') : ''
 
 class AuthExpiredError extends Error {
   constructor(message = 'Your session has expired. Please log in again.', cause = null) {
@@ -80,7 +80,7 @@ api.interceptors.request.use(async (config) => {
   const method = (config.method || 'get').toLowerCase()
   const requiresCsrf = ['post', 'put', 'patch', 'delete'].includes(method)
 
-  if (requiresCsrf) {
+  if (requiresCsrf || method === 'get') {
     await ensureCsrfCookie()
   }
 

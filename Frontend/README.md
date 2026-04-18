@@ -123,6 +123,18 @@ API resolution behavior:
 - Production uses `VITE_API_URL` when set.
 - If `VITE_API_URL` is not set, requests use same-origin `/api`.
 
+Recommended profiles:
+- Local direct backend profile:
+	- `VITE_API_URL=http://localhost:8000`
+- Local proxy profile (via `vite.config.js`):
+	- `VITE_API_URL=`
+- Production profile:
+	- `VITE_API_URL=https://<your-backend-domain>`
+
+Important:
+- Avoid pointing local frontend to production backend unless production CORS/CSRF origins and secure cookie settings are configured for that local origin.
+- A local-to-production origin mismatch can appear as immediate post-login session loss.
+
 ## Auth API Endpoints Used by Frontend
 - `GET /api/auth/csrf/`
 - `POST /api/auth/register/`

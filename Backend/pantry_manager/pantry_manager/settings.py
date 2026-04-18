@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 from decouple import Config, Csv, RepositoryEnv
+from django.core.exceptions import ImproperlyConfigured
 
 try:
     from tzlocal import get_localzone_name
@@ -76,6 +77,22 @@ def _merge_unique_csv(primary, fallback):
         seen.add(value)
         merged.append(value)
     return merged
+
+
+def _normalize_samesite(value, setting_name):
+    normalized = str(value).strip().lower()
+    mapping = {
+        'strict': 'Strict',
+        'lax': 'Lax',
+        'none': 'None',
+    }
+
+    if normalized not in mapping:
+        raise ImproperlyConfigured(
+            f"{setting_name} must be one of Strict, Lax, or None."
+        )
+
+    return mapping[normalized]
 
 
 # Application definition
@@ -244,18 +261,35 @@ CSRF_TRUSTED_ORIGINS = _merge_unique_csv(
     _build_default_csrf_trusted_origins(ALLOWED_HOSTS),
 )
 
-SESSION_COOKIE_SAMESITE = env(
+SESSION_COOKIE_SAMESITE = _normalize_samesite(
+    env(
+        'SESSION_COOKIE_SAMESITE',
+        default='None' if not DEBUG else 'Lax',
+    ),
     'SESSION_COOKIE_SAMESITE',
-    default='None' if not DEBUG else 'Lax',
 )
-CSRF_COOKIE_SAMESITE = env(
+CSRF_COOKIE_SAMESITE = _normalize_samesite(
+    env(
+        'CSRF_COOKIE_SAMESITE',
+        default='None' if not DEBUG else 'Lax',
+    ),
     'CSRF_COOKIE_SAMESITE',
-    default='None' if not DEBUG else 'Lax',
 )
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
 SESSION_COOKIE_HTTPONLY = env('SESSION_COOKIE_HTTPONLY', default=True, cast=bool)
 CSRF_COOKIE_HTTPONLY = env('CSRF_COOKIE_HTTPONLY', default=False, cast=bool)
+
+if SESSION_COOKIE_SAMESITE == 'None' and not SESSION_COOKIE_SECURE:
+    raise ImproperlyConfigured(
+        'SESSION_COOKIE_SECURE must be true when SESSION_COOKIE_SAMESITE is None.'
+    )
+
+if CSRF_COOKIE_SAMESITE == 'None' and not CSRF_COOKIE_SECURE:
+    raise ImproperlyConfigured(
+        'CSRF_COOKIE_SECURE must be true when CSRF_COOKIE_SAMESITE is None.'
+    )
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 SECURE_BROWSER_XSS_FILTER = True

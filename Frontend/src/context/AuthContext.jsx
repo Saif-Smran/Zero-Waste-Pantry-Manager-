@@ -108,7 +108,7 @@ export function AuthProvider({ children }) {
     }
 
     if (responseUser) {
-      // Preserve valid login response user if session confirmation is delayed.
+      // Re-apply response user after session probes may have reset state.
       setUser(responseUser)
       toast.success(`Welcome back, ${fallbackUsername}!`)
       return responseUser
@@ -131,6 +131,8 @@ export function AuthProvider({ children }) {
     }
 
     if (responseUser) {
+      // Re-apply response user after session probes may have reset state.
+      setUser(responseUser)
       return responseUser
     }
 

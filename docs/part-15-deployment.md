@@ -44,6 +44,10 @@ Open backend service -> Variables and set:
 - `PYTHONPATH=pantry_manager`
 - `CORS_ALLOWED_ORIGINS=https://<your-frontend-domain>`
 - `CSRF_TRUSTED_ORIGINS=https://<your-frontend-domain>`
+- `SESSION_COOKIE_SAMESITE=None`
+- `CSRF_COOKIE_SAMESITE=None`
+- `SESSION_COOKIE_SECURE=true`
+- `CSRF_COOKIE_SECURE=true`
 
 Railway PostgreSQL automatically provides:
 - `PGHOST`
@@ -51,6 +55,9 @@ Railway PostgreSQL automatically provides:
 - `PGDATABASE`
 - `PGUSER`
 - `PGPASSWORD`
+
+Cookie note:
+- In production cross-origin HTTPS setups, `SameSite=None` must be paired with `Secure=true` for session and CSRF cookies.
 
 ### 5) Deploy backend
 Run from repository root:

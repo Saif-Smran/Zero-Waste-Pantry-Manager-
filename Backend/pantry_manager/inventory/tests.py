@@ -348,3 +348,51 @@ class FoodItemIsolationTests(TestCase):
 			response.status_code,
 			[status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
 		)
+
+
+class AuthSessionFlowTests(TestCase):
+	def setUp(self):
+		self.client = APIClient()
+		self.user_model = get_user_model()
+		self.username = "session_user"
+		self.password = "pass12345"
+		self.user_model.objects.create_user(username=self.username, password=self.password)
+
+	def test_session_endpoint_reports_unauthenticated_by_default(self):
+		response = self.client.get("/api/auth/session/")
+
+		self.assertEqual(response.status_code, status.HTTP_200_OK)
+		self.assertFalse(response.data["authenticated"])
+		self.assertIsNone(response.data["user"])
+		self.assertIn("csrf_token", response.data)
+
+	def test_login_sets_session_visible_to_session_endpoint(self):
+		login_response = self.client.post(
+			"/api/auth/login/",
+			{"username": self.username, "password": self.password},
+			format="json",
+		)
+
+		self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+		self.assertEqual(login_response.data["user"]["username"], self.username)
+
+		session_response = self.client.get("/api/auth/session/")
+		self.assertEqual(session_response.status_code, status.HTTP_200_OK)
+		self.assertTrue(session_response.data["authenticated"])
+		self.assertEqual(session_response.data["user"]["username"], self.username)
+
+	def test_logout_clears_authenticated_session(self):
+		login_response = self.client.post(
+			"/api/auth/login/",
+			{"username": self.username, "password": self.password},
+			format="json",
+		)
+		self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+
+		logout_response = self.client.post("/api/auth/logout/", format="json")
+		self.assertEqual(logout_response.status_code, status.HTTP_204_NO_CONTENT)
+
+		session_response = self.client.get("/api/auth/session/")
+		self.assertEqual(session_response.status_code, status.HTTP_200_OK)
+		self.assertFalse(session_response.data["authenticated"])
+		self.assertIsNone(session_response.data["user"])

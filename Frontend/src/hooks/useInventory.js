@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
-import api, { authApi, isAuthExpiredError } from '../services/api'
+import useAuth from './useAuth'
+import api, { isAuthExpiredError } from '../services/api'
 
 function useInventory(sortParam) {
+  const { isAuthenticated } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   const fetchItems = useCallback(async () => {
+    if (!isAuthenticated) {
+      setItems([])
+      setError('')
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -16,41 +25,15 @@ function useInventory(sortParam) {
       })
 
     try {
-      let response
-
-      try {
-        response = await requestItems()
-      } catch (err) {
-        const statusCode = err?.response?.status
-        const authError = isAuthExpiredError(err) || statusCode === 401 || statusCode === 403
-
-        if (!authError) {
-          throw err
-        }
-
-        try {
-          await new Promise((resolve) => {
-            setTimeout(resolve, 200)
-          })
-
-          const sessionResponse = await authApi.session()
-          if (sessionResponse?.data?.user) {
-            response = await requestItems()
-          } else {
-            throw new Error('Session missing after auth retry')
-          }
-        } catch {
-          const expiredError = new Error('Auth session expired')
-          expiredError.isAuthExpired = true
-          throw expiredError
-        }
-      }
-
+      const response = await requestItems()
       setItems(response.data)
     } catch (err) {
-      if (isAuthExpiredError(err) || err?.isAuthExpired) {
+      const statusCode = err?.response?.status
+      const authError = isAuthExpiredError(err) || err?.isAuthExpired || statusCode === 401 || statusCode === 403
+
+      if (authError) {
         setItems([])
-        setError('Your session has expired. Please log in again.')
+        setError('')
         return
       }
 
@@ -60,7 +43,7 @@ function useInventory(sortParam) {
     } finally {
       setLoading(false)
     }
-  }, [sortParam])
+  }, [isAuthenticated, sortParam])
 
   useEffect(() => {
     fetchItems()

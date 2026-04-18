@@ -112,6 +112,23 @@ Set these in Backend/.env:
 - TIME_ZONE (optional, overrides OS-detected local timezone)
 - CORS_ALLOWED_ORIGINS (optional, defaults include local Vite origins)
 - CSRF_TRUSTED_ORIGINS (optional, defaults include local Vite origins)
+- SESSION_COOKIE_SAMESITE (optional, local default `Lax`)
+- CSRF_COOKIE_SAMESITE (optional, local default `Lax`)
+- SESSION_COOKIE_SECURE (optional, local default `false`)
+- CSRF_COOKIE_SECURE (optional, local default `false`)
+
+Cookie profile examples:
+
+- Local same-site profile:
+   - `SESSION_COOKIE_SAMESITE=Lax`
+   - `CSRF_COOKIE_SAMESITE=Lax`
+   - `SESSION_COOKIE_SECURE=false`
+   - `CSRF_COOKIE_SECURE=false`
+- Production cross-origin HTTPS profile:
+   - `SESSION_COOKIE_SAMESITE=None`
+   - `CSRF_COOKIE_SAMESITE=None`
+   - `SESSION_COOKIE_SECURE=true`
+   - `CSRF_COOKIE_SECURE=true`
 
 Production note:
 - On Railway, set variables in Shared Variables. The app reads process environment directly when `Backend/.env` is not present.
