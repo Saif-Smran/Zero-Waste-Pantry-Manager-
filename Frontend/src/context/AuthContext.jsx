@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { authApi } from '../services/api'
 import AuthContext from './authContextObject'
 
@@ -28,20 +29,37 @@ export function AuthProvider({ children }) {
   }, [refreshSession])
 
   const login = useCallback(async (username, password) => {
-    const response = await authApi.login({ username, password })
-    setUser(response.data.user)
-    return response.data.user
+    await authApi.login({ username, password })
+    const sessionResponse = await authApi.session()
+    setUser(sessionResponse.data.user)
+    toast.success(`Welcome back, ${sessionResponse.data.user.username}!`)
+    return sessionResponse.data.user
   }, [])
 
   const register = useCallback(async (username, password) => {
-    const response = await authApi.register({ username, password })
-    setUser(response.data.user)
-    return response.data.user
+    await authApi.register({ username, password })
+    const sessionResponse = await authApi.session()
+    setUser(sessionResponse.data.user)
+    return sessionResponse.data.user
   }, [])
 
   const logout = useCallback(async () => {
-    await authApi.logout()
-    setUser(null)
+    let requestFailed = false
+
+    try {
+      await authApi.logout()
+    } catch {
+      requestFailed = true
+    } finally {
+      setUser(null)
+    }
+
+    if (requestFailed) {
+      toast.error('Server logout failed. Session cleared on this device.')
+      return
+    }
+
+    toast.success('Logged out successfully.')
   }, [])
 
   const value = useMemo(

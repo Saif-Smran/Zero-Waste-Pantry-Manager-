@@ -113,9 +113,10 @@ def login_user(request):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def logout_user(request):
-    logout(request)
+    if request.user.is_authenticated:
+        logout(request)
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 

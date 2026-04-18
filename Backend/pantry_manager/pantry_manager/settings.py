@@ -233,6 +233,18 @@ CSRF_TRUSTED_ORIGINS = _merge_unique_csv(
     _build_default_csrf_trusted_origins(ALLOWED_HOSTS),
 )
 
+SESSION_COOKIE_SAMESITE = env(
+    'SESSION_COOKIE_SAMESITE',
+    default='None' if not DEBUG else 'Lax',
+)
+CSRF_COOKIE_SAMESITE = env(
+    'CSRF_COOKIE_SAMESITE',
+    default='None' if not DEBUG else 'Lax',
+)
+SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE', default=not DEBUG, cast=bool)
+CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE', default=not DEBUG, cast=bool)
+SESSION_COOKIE_HTTPONLY = env('SESSION_COOKIE_HTTPONLY', default=True, cast=bool)
+
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True

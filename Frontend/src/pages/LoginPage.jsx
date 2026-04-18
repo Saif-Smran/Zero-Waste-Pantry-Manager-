@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
 
@@ -23,7 +24,10 @@ function LoginPage() {
       await login(username.trim(), password)
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err?.response?.data?.error || 'Login failed. Please try again.')
+      const errorMessage =
+        err?.response?.data?.error || err?.message || 'Login failed. Please try again.'
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setSubmitting(false)
     }
@@ -69,7 +73,7 @@ function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60"
+            className="w-full bg-gray-900 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-60 transition-transform active:scale-[0.99]"
           >
             {submitting ? 'Logging in...' : 'Log In'}
           </button>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { RiQuestionLine } from 'react-icons/ri'
+import { RiLoader4Line, RiQuestionLine } from 'react-icons/ri'
 import InventoryPage from './pages/InventoryPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -26,9 +26,20 @@ function ProtectedRoute({ children }) {
 function App() {
   const { isAuthenticated, logout } = useAuth()
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
-    await logout()
+    if (isLoggingOut) {
+      return
+    }
+
+    setIsLoggingOut(true)
+
+    try {
+      await logout()
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -48,10 +59,15 @@ function App() {
               </button>
               <button
                 type="button"
-                className="bg-white text-gray-900 text-sm px-3 py-1 rounded hover:bg-gray-100 transition"
+                className="bg-white text-gray-900 text-sm px-3 py-1 rounded hover:bg-gray-100 transition active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                 onClick={handleLogout}
+                disabled={isLoggingOut}
+                aria-busy={isLoggingOut}
               >
-                Logout
+                <span className="inline-flex items-center gap-1">
+                  {isLoggingOut && <RiLoader4Line className="animate-spin" size={14} />}
+                  {isLoggingOut ? 'Logging out...' : 'Logout'}
+                </span>
               </button>
             </div>
           )}
