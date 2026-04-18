@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.middleware.csrf import get_token
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import status
@@ -61,7 +62,7 @@ def _serialize_user(user):
 @permission_classes([AllowAny])
 @ensure_csrf_cookie
 def csrf_cookie(request):
-    return Response({"message": "CSRF cookie set."})
+    return Response({"message": "CSRF cookie set.", "csrf_token": get_token(request)})
 
 
 @api_view(["POST"])
@@ -85,7 +86,10 @@ def register_user(request):
 
     user = user_model.objects.create_user(username=username, password=password)
     login(request, user)
-    return Response({"user": _serialize_user(user)}, status=status.HTTP_201_CREATED)
+    return Response(
+        {"user": _serialize_user(user), "csrf_token": get_token(request)},
+        status=status.HTTP_201_CREATED,
+    )
 
 
 @api_view(["POST"])
@@ -109,7 +113,10 @@ def login_user(request):
         )
 
     login(request, user)
-    return Response({"user": _serialize_user(user)}, status=status.HTTP_200_OK)
+    return Response(
+        {"user": _serialize_user(user), "csrf_token": get_token(request)},
+        status=status.HTTP_200_OK,
+    )
 
 
 @api_view(["POST"])
@@ -124,10 +131,17 @@ def logout_user(request):
 @permission_classes([AllowAny])
 def session_user(request):
     if not request.user.is_authenticated:
-        return Response({"user": None, "authenticated": False}, status=status.HTTP_200_OK)
+        return Response(
+            {"user": None, "authenticated": False, "csrf_token": get_token(request)},
+            status=status.HTTP_200_OK,
+        )
 
     return Response(
-        {"user": _serialize_user(request.user), "authenticated": True},
+        {
+            "user": _serialize_user(request.user),
+            "authenticated": True,
+            "csrf_token": get_token(request),
+        },
         status=status.HTTP_200_OK,
     )
 

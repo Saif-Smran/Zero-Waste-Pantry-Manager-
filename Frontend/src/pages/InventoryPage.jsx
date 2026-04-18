@@ -20,11 +20,6 @@ function InventoryPage() {
     setSummaryRefreshKey((prev) => prev + 1)
   }
 
-  const getCsrfToken = () => {
-    const tokenMatch = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/)
-    return tokenMatch ? decodeURIComponent(tokenMatch[1]) : ''
-  }
-
   const handleDecrement = async (itemId) => {
     const currentItem = items.find((item) => item.id === itemId)
 
@@ -33,17 +28,9 @@ function InventoryPage() {
     }
 
     try {
-      await api.patch(
-        `/api/items/${itemId}/`,
-        {
-          quantity: currentItem.quantity - 1,
-        },
-        {
-          headers: {
-            'X-CSRFToken': getCsrfToken(),
-          },
-        },
-      )
+      await api.patch(`/api/items/${itemId}/`, {
+        quantity: currentItem.quantity - 1,
+      })
 
       await refreshAll()
       toast.success('Quantity updated')
@@ -54,11 +41,7 @@ function InventoryPage() {
 
   const handleDelete = async (itemId) => {
     try {
-      await api.delete(`/api/items/${itemId}/`, {
-        headers: {
-          'X-CSRFToken': getCsrfToken(),
-        },
-      })
+      await api.delete(`/api/items/${itemId}/`)
       await refreshAll()
       toast.success('Item deleted')
     } catch {

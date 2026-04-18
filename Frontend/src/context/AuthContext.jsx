@@ -28,6 +28,18 @@ export function AuthProvider({ children }) {
     init()
   }, [refreshSession])
 
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setUser(null)
+    }
+
+    window.addEventListener('auth:expired', handleAuthExpired)
+
+    return () => {
+      window.removeEventListener('auth:expired', handleAuthExpired)
+    }
+  }, [])
+
   const login = useCallback(async (username, password) => {
     const response = await authApi.login({ username, password })
     setUser(response.data.user)
