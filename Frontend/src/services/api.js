@@ -29,6 +29,10 @@ export const setCsrfToken = (token) => {
   csrfTokenCache = typeof token === 'string' ? token : ''
 }
 
+export const clearCsrfToken = () => {
+  csrfTokenCache = ''
+}
+
 export const getCsrfToken = () => {
   const cookieToken = readCsrfTokenFromCookie()
 
@@ -114,6 +118,7 @@ api.interceptors.response.use(
     const isAuthEndpoint = requestUrl.includes('/api/auth/')
 
     if ((statusCode === 401 || statusCode === 403) && !isAuthEndpoint && typeof window !== 'undefined') {
+      clearCsrfToken()
       window.dispatchEvent(new CustomEvent('auth:expired'))
       return Promise.reject(new AuthExpiredError(undefined, error))
     }

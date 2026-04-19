@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { authApi } from '../services/api'
+import { authApi, clearCsrfToken } from '../services/api'
 import AuthContext from './authContextObject'
+
+const sleep = (delayMs) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, delayMs)
+  })
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const inFlightSessionRequest = useRef(null)
   const latestSessionRequestId = useRef(0)
+  const lastSessionRequestFailed = useRef(false)
 
   const refreshSession = useCallback(async ({ force = false } = {}) => {
     if (!force && inFlightSessionRequest.current) {
@@ -20,14 +26,19 @@ export function AuthProvider({ children }) {
     const sessionPromise = authApi
       .session()
       .then((response) => {
+        lastSessionRequestFailed.current = false
         const sessionUser = response?.data?.user || null
         if (latestSessionRequestId.current === requestId) {
           setUser(sessionUser)
         }
         return sessionUser
       })
-      .catch(() => {
-        if (latestSessionRequestId.current === requestId) {
+      .catch((error) => {
+        lastSessionRequestFailed.current = true
+        const statusCode = error?.response?.status
+        const shouldClearUser = statusCode === 401 || statusCode === 403
+
+        if (latestSessionRequestId.current === requestId && shouldClearUser) {
           setUser(null)
         }
         return null
@@ -67,7 +78,19 @@ export function AuthProvider({ children }) {
 
     const init = async () => {
       setLoading(true)
-      await refreshSession()
+
+      const retryDelays = [0, 200, 500]
+      for (const delay of retryDelays) {
+        if (delay > 0) {
+          await sleep(delay)
+        }
+
+        await refreshSession({ force: true })
+        if (!lastSessionRequestFailed.current) {
+          break
+        }
+      }
+
       if (mounted) {
         setLoading(false)
       }
@@ -82,6 +105,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const handleAuthExpired = () => {
+      clearCsrfToken()
       setUser(null)
     }
 
@@ -147,6 +171,7 @@ export function AuthProvider({ children }) {
     } catch {
       requestFailed = true
     } finally {
+      clearCsrfToken()
       setUser(null)
     }
 

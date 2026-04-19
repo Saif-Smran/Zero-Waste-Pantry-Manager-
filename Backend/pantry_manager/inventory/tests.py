@@ -396,3 +396,41 @@ class AuthSessionFlowTests(TestCase):
 		self.assertEqual(session_response.status_code, status.HTTP_200_OK)
 		self.assertFalse(session_response.data["authenticated"])
 		self.assertIsNone(session_response.data["user"])
+
+
+class AuthCsrfProtectionTests(TestCase):
+	def setUp(self):
+		self.client = APIClient(enforce_csrf_checks=True)
+		self.user_model = get_user_model()
+		self.username = "csrf_user"
+		self.password = "pass12345"
+		self.user_model.objects.create_user(username=self.username, password=self.password)
+
+	def test_login_requires_csrf_token(self):
+		response = self.client.post(
+			"/api/auth/login/",
+			{"username": self.username, "password": self.password},
+			format="json",
+		)
+
+		self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+	def test_login_succeeds_with_valid_csrf_cookie_and_header(self):
+		csrf_response = self.client.get("/api/auth/csrf/")
+		self.assertEqual(csrf_response.status_code, status.HTTP_200_OK)
+
+		csrf_token = self.client.cookies["csrftoken"].value
+		login_response = self.client.post(
+			"/api/auth/login/",
+			{"username": self.username, "password": self.password},
+			format="json",
+			HTTP_X_CSRFTOKEN=csrf_token,
+		)
+
+		self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+		self.assertEqual(login_response.data["user"]["username"], self.username)
+
+		session_response = self.client.get("/api/auth/session/")
+		self.assertEqual(session_response.status_code, status.HTTP_200_OK)
+		self.assertTrue(session_response.data["authenticated"])
+		self.assertEqual(session_response.data["user"]["username"], self.username)

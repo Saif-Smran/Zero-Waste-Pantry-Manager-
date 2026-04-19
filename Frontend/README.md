@@ -116,19 +116,25 @@ npm run dev
 	- `pantry-bg`, `pantry-card`
 
 ## Environment Variable
-- `VITE_API_URL` (optional in local dev, required when production frontend and backend are on different origins)
+- `VITE_API_URL` (optional in local dev, required when deployed frontend and backend are on different origins)
+- `VITE_DEV_PROXY_TARGET` (local dev only, sets Vite /api proxy target)
 
 API resolution behavior:
-- Local development defaults to same-origin `/api` requests and uses Vite proxy to `http://localhost:8000`.
+- Local development defaults to same-origin `/api` requests and uses Vite proxy to `VITE_DEV_PROXY_TARGET` (fallback `http://localhost:8000`).
 - Production uses `VITE_API_URL` when set.
 - If `VITE_API_URL` is not set, requests use same-origin `/api`.
 
 Recommended profiles:
-- Local direct backend profile:
-	- `VITE_API_URL=http://localhost:8000`
-- Local proxy profile (via `vite.config.js`):
+
+- Local proxy to local backend profile:
 	- `VITE_API_URL=`
-- Production profile:
+	- `VITE_DEV_PROXY_TARGET=http://localhost:8000`
+- Local proxy to Railway backend profile:
+	- `VITE_API_URL=`
+	- `VITE_DEV_PROXY_TARGET=https://<your-backend-domain>`
+- Local direct backend profile (cross-origin):
+	- `VITE_API_URL=http://localhost:8000`
+- Production profile (deployed frontend):
 	- `VITE_API_URL=https://<your-backend-domain>`
 
 Important:

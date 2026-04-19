@@ -5,6 +5,7 @@ from django.db.models import Count, Q
 from django.middleware.csrf import get_token
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_protect
 from rest_framework import status
 from rest_framework.decorators import action, api_view, authentication_classes, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -69,6 +70,7 @@ def csrf_cookie(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@csrf_protect
 def register_user(request):
     username = (request.data.get("username") or "").strip()
     password = request.data.get("password") or ""
@@ -96,6 +98,7 @@ def register_user(request):
 @api_view(["POST"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@csrf_protect
 def login_user(request):
     username = (request.data.get("username") or "").strip()
     password = request.data.get("password") or ""
@@ -122,6 +125,7 @@ def login_user(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@csrf_protect
 def logout_user(request):
     if request.user.is_authenticated:
         logout(request)
