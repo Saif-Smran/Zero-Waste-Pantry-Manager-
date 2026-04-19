@@ -146,6 +146,7 @@ Recommended profiles:
 	- `VITE_API_URL=https://<your-backend-domain>`
 
 Important:
+- When running frontend on `localhost`, prefer proxy mode (`VITE_API_URL=` and `VITE_DEV_PROXY_TARGET=...`) even for Railway backends. It keeps requests same-origin in the browser and avoids third-party cookie restrictions that can cause CSRF/login failures.
 - Avoid pointing local frontend to production backend unless production CORS/CSRF origins and secure cookie settings are configured for that local origin.
 - A local-to-production origin mismatch can appear as immediate post-login session loss.
 

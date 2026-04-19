@@ -254,17 +254,19 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 CORS_ALLOW_CREDENTIALS = True
+_frontend_origins = env(
+    'CORS_ALLOWED_ORIGINS',
+    default='http://localhost:5173,http://127.0.0.1:5173',
+    cast=Csv(),
+)
+
 CORS_ALLOWED_ORIGINS = _merge_unique_csv(
-    env(
-        'CORS_ALLOWED_ORIGINS',
-        default='http://localhost:5173,http://127.0.0.1:5173',
-        cast=Csv(),
-    ),
+    _frontend_origins,
     _build_default_csrf_trusted_origins(ALLOWED_HOSTS),
 )
 CSRF_TRUSTED_ORIGINS = _merge_unique_csv(
     env('CSRF_TRUSTED_ORIGINS', default='', cast=Csv()),
-    _build_default_csrf_trusted_origins(ALLOWED_HOSTS),
+    CORS_ALLOWED_ORIGINS,
 )
 
 SESSION_COOKIE_SAMESITE = _normalize_samesite(

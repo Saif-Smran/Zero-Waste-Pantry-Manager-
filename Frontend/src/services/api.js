@@ -62,6 +62,24 @@ const getCsrfTokenFromResponse = (response) => {
 
 const isMutatingMethod = (method) => ['post', 'put', 'patch', 'delete'].includes(String(method || 'get').toLowerCase())
 
+const isAuthRequest = (url) => String(url || '').includes('/api/auth/')
+
+const isCrossOriginApi = () => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  if (!API_BASE_URL) {
+    return false
+  }
+
+  try {
+    return new URL(API_BASE_URL).origin !== window.location.origin
+  } catch {
+    return false
+  }
+}
+
 let csrfBootstrapPromise = null
 
 export const ensureCsrfCookie = async ({ force = false } = {}) => {
@@ -84,7 +102,7 @@ export const ensureCsrfCookie = async ({ force = false } = {}) => {
       .then((response) => {
         const tokenFromResponse = getCsrfTokenFromResponse(response)
         const tokenFromCookie = readCsrfTokenFromCookie()
-        const nextToken = tokenFromResponse || tokenFromCookie
+        const nextToken = tokenFromCookie || tokenFromResponse
 
         if (nextToken) {
           setCsrfToken(nextToken)
@@ -117,9 +135,11 @@ api.interceptors.request.use(async (config) => {
 
   const method = (config.method || 'get').toLowerCase()
   const requiresCsrf = isMutatingMethod(method)
+  const requestUrl = String(config.url || '')
+  const forceBootstrap = requiresCsrf && isCrossOriginApi() && isAuthRequest(requestUrl)
 
   if (requiresCsrf) {
-    await ensureCsrfCookie()
+    await ensureCsrfCookie({ force: forceBootstrap })
   }
 
   const csrfToken = getCsrfToken()
@@ -135,7 +155,7 @@ api.interceptors.response.use(
   (response) => {
     const tokenFromResponse = getCsrfTokenFromResponse(response)
     const tokenFromCookie = readCsrfTokenFromCookie()
-    const nextToken = tokenFromResponse || tokenFromCookie
+    const nextToken = tokenFromCookie || tokenFromResponse
 
     if (nextToken) {
       setCsrfToken(nextToken)
@@ -155,6 +175,7 @@ api.interceptors.response.use(
     const isCsrfFailure = statusCode === 403 && responseMessage.includes('csrf')
 
     if (isCsrfFailure && isMutatingMethod(requestMethod) && !requestConfig._csrfRetry) {
+      clearCsrfToken()
       requestConfig._csrfRetry = true
       await ensureCsrfCookie({ force: true })
 

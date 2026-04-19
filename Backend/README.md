@@ -133,6 +133,9 @@ Cookie profile examples:
 Production note:
 - On Railway, set variables in Shared Variables. The app reads process environment directly when `Backend/.env` is not present.
 - Keep `Backend/.env` for local development only.
+- If a local frontend (`http://localhost:5173`) is allowed to call Railway during testing, include those localhost origins in both `CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS`.
+
+
 
 Local performance note:
 - When `USE_LOCAL_SQLITE=true`, Django uses local SQLite for faster local auth/API iteration.

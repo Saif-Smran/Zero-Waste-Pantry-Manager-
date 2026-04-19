@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { authApi, clearCsrfToken } from '../services/api'
+import { authApi, clearCsrfToken, ensureCsrfCookie } from '../services/api'
 import AuthContext from './authContextObject'
 
 const sleep = (delayMs) =>
@@ -78,6 +78,12 @@ export function AuthProvider({ children }) {
 
     const init = async () => {
       setLoading(true)
+
+      try {
+        await ensureCsrfCookie()
+      } catch {
+        // Session probe below can still recover token on subsequent requests.
+      }
 
       const retryDelays = [0, 200, 500]
       for (const delay of retryDelays) {
