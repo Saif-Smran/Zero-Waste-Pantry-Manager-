@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.db.models import Count, Q
 from django.middleware.csrf import get_token
 from django.utils import timezone
+from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_protect
 from rest_framework import status
@@ -59,12 +60,21 @@ def _serialize_user(user):
     }
 
 
+def _mark_no_store(response):
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
+
+
 @api_view(["GET"])
 @authentication_classes([])
 @permission_classes([AllowAny])
+@never_cache
 @ensure_csrf_cookie
 def csrf_cookie(request):
-    return Response({"message": "CSRF cookie set.", "csrf_token": get_token(request)})
+    response = Response({"message": "CSRF cookie set.", "csrf_token": get_token(request)})
+    return _mark_no_store(response)
 
 
 @api_view(["POST"])
@@ -134,14 +144,17 @@ def logout_user(request):
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
+@never_cache
+@ensure_csrf_cookie
 def session_user(request):
     if not request.user.is_authenticated:
-        return Response(
+        response = Response(
             {"user": None, "authenticated": False, "csrf_token": get_token(request)},
             status=status.HTTP_200_OK,
         )
+        return _mark_no_store(response)
 
-    return Response(
+    response = Response(
         {
             "user": _serialize_user(request.user),
             "authenticated": True,
@@ -149,6 +162,7 @@ def session_user(request):
         },
         status=status.HTTP_200_OK,
     )
+    return _mark_no_store(response)
 
 
 class FoodItemViewSet(ModelViewSet):

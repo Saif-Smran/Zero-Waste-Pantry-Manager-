@@ -1,7 +1,14 @@
 import axios from 'axios'
 
 const explicitApiBaseUrl = String(import.meta.env.VITE_API_URL || '').trim()
-const API_BASE_URL = explicitApiBaseUrl ? explicitApiBaseUrl.replace(/\/$/, '') : ''
+const isNetlifyHosted =
+  typeof window !== 'undefined' &&
+  /\.netlify\.app$/i.test(window.location.hostname)
+const API_BASE_URL = isNetlifyHosted
+  ? ''
+  : explicitApiBaseUrl
+    ? explicitApiBaseUrl.replace(/\/$/, '')
+    : ''
 
 class AuthExpiredError extends Error {
   constructor(message = 'Your session has expired. Please log in again.', cause = null) {
@@ -44,14 +51,28 @@ export const getCsrfToken = () => {
   return csrfTokenCache
 }
 
-let csrfBootstrapPromise = null
-
-export const ensureCsrfCookie = async () => {
-  if (getCsrfToken()) {
-    return
+const getCsrfTokenFromResponse = (response) => {
+  const nextToken = response?.data?.csrf_token
+  if (typeof nextToken === 'string' && nextToken) {
+    return nextToken
   }
 
-  if (!csrfBootstrapPromise) {
+  return ''
+}
+
+const isMutatingMethod = (method) => ['post', 'put', 'patch', 'delete'].includes(String(method || 'get').toLowerCase())
+
+let csrfBootstrapPromise = null
+
+export const ensureCsrfCookie = async ({ force = false } = {}) => {
+  if (!force) {
+    const existingToken = getCsrfToken()
+    if (existingToken) {
+      return existingToken
+    }
+  }
+
+  if (!csrfBootstrapPromise || force) {
     const csrfEndpoint = API_BASE_URL
       ? `${API_BASE_URL.replace(/\/$/, '')}/api/auth/csrf/`
       : '/api/auth/csrf/'
@@ -59,6 +80,17 @@ export const ensureCsrfCookie = async () => {
     csrfBootstrapPromise = axios
       .get(csrfEndpoint, {
         withCredentials: true,
+      })
+      .then((response) => {
+        const tokenFromResponse = getCsrfTokenFromResponse(response)
+        const tokenFromCookie = readCsrfTokenFromCookie()
+        const nextToken = tokenFromResponse || tokenFromCookie
+
+        if (nextToken) {
+          setCsrfToken(nextToken)
+        }
+
+        return nextToken
       })
       .finally(() => {
         csrfBootstrapPromise = null
@@ -71,6 +103,8 @@ export const ensureCsrfCookie = async () => {
   if (token) {
     csrfTokenCache = token
   }
+
+  return csrfTokenCache
 }
 
 const api = axios.create({
@@ -82,9 +116,9 @@ api.interceptors.request.use(async (config) => {
   config.withCredentials = true
 
   const method = (config.method || 'get').toLowerCase()
-  const requiresCsrf = ['post', 'put', 'patch', 'delete'].includes(method)
+  const requiresCsrf = isMutatingMethod(method)
 
-  if (requiresCsrf || method === 'get') {
+  if (requiresCsrf) {
     await ensureCsrfCookie()
   }
 
@@ -99,23 +133,39 @@ api.interceptors.request.use(async (config) => {
 
 api.interceptors.response.use(
   (response) => {
-    const cookieToken = readCsrfTokenFromCookie()
-    if (cookieToken) {
-      setCsrfToken(cookieToken)
-      return response
-    }
+    const tokenFromResponse = getCsrfTokenFromResponse(response)
+    const tokenFromCookie = readCsrfTokenFromCookie()
+    const nextToken = tokenFromResponse || tokenFromCookie
 
-    const nextToken = response?.data?.csrf_token
-    if (typeof nextToken === 'string' && nextToken) {
+    if (nextToken) {
       setCsrfToken(nextToken)
     }
 
     return response
   },
-  (error) => {
+  async (error) => {
     const statusCode = error?.response?.status
-    const requestUrl = String(error?.config?.url || '')
+    const requestConfig = error?.config || {}
+    const requestUrl = String(requestConfig.url || '')
+    const requestMethod = (requestConfig.method || 'get').toLowerCase()
     const isAuthEndpoint = requestUrl.includes('/api/auth/')
+    const responseMessage = String(
+      error?.response?.data?.detail || error?.response?.data?.error || ''
+    ).toLowerCase()
+    const isCsrfFailure = statusCode === 403 && responseMessage.includes('csrf')
+
+    if (isCsrfFailure && isMutatingMethod(requestMethod) && !requestConfig._csrfRetry) {
+      requestConfig._csrfRetry = true
+      await ensureCsrfCookie({ force: true })
+
+      const csrfToken = getCsrfToken()
+      if (csrfToken) {
+        requestConfig.headers = requestConfig.headers || {}
+        requestConfig.headers['X-CSRFToken'] = csrfToken
+      }
+
+      return api.request(requestConfig)
+    }
 
     if ((statusCode === 401 || statusCode === 403) && !isAuthEndpoint && typeof window !== 'undefined') {
       clearCsrfToken()
