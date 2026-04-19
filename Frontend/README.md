@@ -109,6 +109,14 @@ npm run dev
 - `npm run preview` - preview production build
 - `npm run lint` - run ESLint
 
+## Netlify Deployment
+- Base directory: `Frontend`
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Environment variable: `VITE_API_URL=https://<your-backend-domain>`
+
+This repo includes `netlify.toml` with an SPA fallback redirect (`/* -> /index.html`) so direct page loads and refreshes on routes like `/login` and `/register` work correctly.
+
 ## Tailwind Configuration
 - Tailwind v4 is loaded through `@import 'tailwindcss'` in `src/index.css`.
 - Custom design tokens are declared with `@theme` in `src/index.css`:
