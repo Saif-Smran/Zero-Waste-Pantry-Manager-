@@ -1,1 +1,2 @@
+release: cd pantry_manager && python manage.py migrate --noinput
 web: cd pantry_manager && gunicorn pantry_manager.wsgi:application --bind 0.0.0.0:$PORT

@@ -175,6 +175,12 @@ def _first_real_env(names, default=''):
 
 USE_LOCAL_SQLITE = env('USE_LOCAL_SQLITE', default=False, cast=bool)
 
+if USE_LOCAL_SQLITE and not DEBUG:
+    raise ImproperlyConfigured(
+        'USE_LOCAL_SQLITE=true is not allowed when DEBUG=False. '
+        'Use PostgreSQL variables for production deployments.'
+    )
+
 if USE_LOCAL_SQLITE:
     DATABASES = {
         'default': {

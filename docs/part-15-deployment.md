@@ -13,6 +13,7 @@ This document defines exact steps and commands to deploy the Zero-Waste Pantry M
 - `Backend/runtime.txt`
 - `Backend/requirements.txt`
 - `Backend/pantry_manager/pantry_manager/settings.py`
+- `Frontend/netlify.toml`
 
 ## Step-by-Step Deployment (Exact Commands)
 
@@ -42,6 +43,7 @@ Open backend service -> Variables and set:
 - `DEBUG=False`
 - `ALLOWED_HOSTS=<your-backend-domain>,localhost,127.0.0.1`
 - `PYTHONPATH=pantry_manager`
+- `USE_LOCAL_SQLITE=false`
 - `CORS_ALLOWED_ORIGINS=https://<your-frontend-domain>`
 - `CSRF_TRUSTED_ORIGINS=https://<your-frontend-domain>`
 - `SESSION_COOKIE_SAMESITE=None`
@@ -58,6 +60,7 @@ Railway PostgreSQL automatically provides:
 
 Cookie note:
 - In production cross-origin HTTPS setups, `SameSite=None` must be paired with `Secure=true` for session and CSRF cookies.
+- Keep `USE_LOCAL_SQLITE` disabled in Railway production (set `false` or remove the variable).
 
 ### 5) Deploy backend
 Run from repository root:
@@ -66,8 +69,18 @@ Run from repository root:
 railway up
 ```
 
-### 6) Run Django migrations on Railway
-Run from repository root:
+### 6) Migrations run automatically during deploy
+
+`Backend/Procfile` includes both release and web process types:
+
+```txt
+release: cd pantry_manager && python manage.py migrate --noinput
+web: cd pantry_manager && gunicorn pantry_manager.wsgi:application --bind 0.0.0.0:$PORT
+```
+
+Railway executes `release` before `web`, so database migrations are applied automatically on each deploy.
+
+If needed, you can still run migrations manually from repository root:
 
 ```bash
 railway run python pantry_manager/manage.py migrate
@@ -92,13 +105,24 @@ railway run python pantry_manager/manage.py createsuperuser
 railway status
 ```
 
+### 10) Configure Netlify frontend deployment
+In Netlify site settings:
+
+- Base directory: `Frontend`
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Environment variable: `VITE_API_URL=https://<your-backend-domain>`
+
+`Frontend/netlify.toml` provides an SPA fallback redirect to `index.html`, preventing 404 errors on client-side routes.
+
 ## Railway Build and Start Behavior
 - Build dependencies from `Backend/requirements.txt`
 - Runtime from `Backend/runtime.txt`
-- Start command from `Backend/Procfile`:
+- Process commands from `Backend/Procfile`:
 
 ```txt
-web: gunicorn pantry_manager.wsgi
+release: cd pantry_manager && python manage.py migrate --noinput
+web: cd pantry_manager && gunicorn pantry_manager.wsgi:application --bind 0.0.0.0:$PORT
 ```
 
 ## Notes
