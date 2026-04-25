@@ -15,6 +15,25 @@ React frontend for Zero-Waste Pantry Manager, built with Vite.
 
 The inventory list page is implemented in `src/pages/InventoryPage.jsx` and composed from reusable hooks and UI components.
 
+## App Routing
+
+The frontend now uses a shared router layout in `src/router/index.jsx` with React Router DOM.
+
+### Public Routes
+- `src/pages/HomePage.jsx` - home/landing page with richer hero content and remote images.
+- `src/pages/AboutPage.jsx` - informational page explaining the app and its purpose.
+- `src/pages/LoginPage.jsx` - login screen.
+- `src/pages/RegisterPage.jsx` - account creation screen.
+
+### Private Routes
+- `src/pages/DashboardPage.jsx` - authenticated landing page with summary, profile, and chart.
+- `src/pages/InventoryPage.jsx` - inventory list view protected by session auth.
+
+### Shared UI and Helpers
+- `src/components/ProfileSection.jsx` - greeting, username, and logout shortcut.
+- `src/components/InventoryStatusChart.jsx` - frontend-only bar chart based on summary counts.
+- `src/hooks/usePageTitle.js` - keeps the browser title in sync with the current route.
+
 ### Hooks
 - `src/hooks/useInventory.js`
 	- Fetches inventory from `GET /api/items/?sort=<sortParam>` on mount and when sort changes.
@@ -64,11 +83,15 @@ The inventory list page is implemented in `src/pages/InventoryPage.jsx` and comp
 		- Close button (top-right) closes modal
 	- Scrollable content area for smaller screens (`max-h-[80vh] overflow-y-auto`)
 
+### Search and Titles
+- Inventory search is handled entirely in the browser by filtering the loaded item list by name.
+- Browser tab titles update per page using the custom `usePageTitle` hook.
+
 ### Auth Pages and Routing
 - `src/pages/LoginPage.jsx` - username/password login screen.
 - `src/pages/RegisterPage.jsx` - account creation screen.
-- `src/App.jsx` protects the inventory route and redirects unauthenticated users to login.
-- `src/App.jsx` includes an authenticated navbar Help button and renders the Help modal.
+- `src/App.jsx` now mounts the router, shared navbar, and Help modal.
+- `src/router/index.jsx` protects the private routes and redirects authenticated users to the dashboard after login/register.
 - `src/context/AuthContext.jsx` restores session on app startup.
 - `src/main.jsx` includes the global `Toaster` host (bottom-right) for toast notifications.
 
@@ -156,6 +179,11 @@ Important:
 - `POST /api/auth/login/`
 - `POST /api/auth/logout/`
 - `GET /api/auth/session/`
+
+## Current Frontend Notes
+- The home page includes a larger hero section, stronger content blocks, and hosted image URLs from the internet.
+- The about page includes more explanatory content and a visual layout to match the new public landing experience.
+- No backend API changes are required for the new homepage, about page, dashboard, or client-side search.
 
 ## Troubleshooting
 - `npm run dev` must be run inside the `Frontend` folder.

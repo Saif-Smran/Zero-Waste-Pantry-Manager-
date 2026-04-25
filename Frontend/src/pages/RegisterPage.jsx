@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
+import usePageTitle from '../hooks/usePageTitle'
 
 function RegisterPage() {
   const { isAuthenticated, register } = useAuth()
+  usePageTitle('Register | Zero-Waste Pantry Manager')
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -12,7 +14,7 @@ function RegisterPage() {
   const [submitting, setSubmitting] = useState(false)
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   const handleSubmit = async (event) => {
@@ -28,7 +30,7 @@ function RegisterPage() {
 
     try {
       await register(username.trim(), password)
-      navigate('/', { replace: true })
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err?.response?.data?.error || 'Registration failed. Please try again.')
     } finally {

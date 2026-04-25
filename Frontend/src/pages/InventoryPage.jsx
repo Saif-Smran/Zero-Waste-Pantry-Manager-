@@ -4,16 +4,24 @@ import AddItemForm from '../components/AddItemForm'
 import ItemCard from '../components/ItemCard'
 import SortControls from '../components/SortControls'
 import SummaryBar from '../components/SummaryBar'
+import usePageTitle from '../hooks/usePageTitle'
 import useInventory from '../hooks/useInventory'
 import useSummary from '../hooks/useSummary'
 import api from '../services/api'
 
 function InventoryPage() {
   const [sortParam, setSortParam] = useState('expiry')
+  const [searchTerm, setSearchTerm] = useState('')
   const [summaryRefreshKey, setSummaryRefreshKey] = useState(0)
+  usePageTitle('Inventory | Zero-Waste Pantry Manager')
 
   const { items, loading, error, refetch } = useInventory(sortParam)
   const { summary, loading: summaryLoading } = useSummary(summaryRefreshKey)
+
+  const normalizedSearch = searchTerm.trim().toLowerCase()
+  const filteredItems = normalizedSearch
+    ? items.filter((item) => item.name.toLowerCase().includes(normalizedSearch))
+    : items
 
   const refreshAll = async () => {
     await refetch()
@@ -63,15 +71,31 @@ function InventoryPage() {
 
       <SortControls currentSort={sortParam} onSortChange={setSortParam} />
 
+      <div className="bg-white rounded-xl shadow-sm p-4 mb-4 border border-gray-100">
+        <label htmlFor="search-items" className="block text-sm font-medium text-gray-700 mb-2">
+          Search Items
+        </label>
+        <input
+          id="search-items"
+          type="text"
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Search by item name..."
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+        />
+      </div>
+
       {loading ? (
         <div className="animate-spin border-4 border-gray-200 border-t-gray-800 rounded-full w-10 h-10 mx-auto mt-20" />
       ) : error ? (
         <p className="text-center text-red-600 mt-10">{error}</p>
       ) : items.length === 0 ? (
         <p className="text-center text-gray-400 mt-20 text-lg">No items in your pantry yet.</p>
+      ) : filteredItems.length === 0 ? (
+        <p className="text-center text-gray-400 mt-20 text-lg">No items match your search.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <ItemCard
               key={item.id}
               item={item}

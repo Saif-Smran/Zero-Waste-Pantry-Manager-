@@ -16,12 +16,16 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 - Custom API actions available for near-expiry items and inventory summary metrics.
 - Frontend inventory list view implemented with reusable hooks and Tailwind UI components.
 - Frontend supports sorting inventory by expiry, name, and quantity.
+- Frontend now includes public Home and About pages, a private Dashboard, and a shared router layout.
+- Frontend Home page uses a more polished hero section, richer content, and remote images for visual appeal.
+- Frontend pages use dynamic document titles for Home, About, Login, Register, Dashboard, and Inventory.
 - Frontend item cards include expiry-status color coding and expired badge labeling.
 - Frontend item cards include quantity decrement and delete actions with confirmation.
 - Session-based authentication is implemented (register, login, logout, session check).
 - Inventory routes are protected in frontend and require authenticated session.
 - Inventory API responses are user-scoped, so each logged-in user only sees their own items.
 - Frontend includes add-item form for creating inventory items from the UI with inline field validation.
+- Frontend inventory page includes client-side search by item name without any backend changes.
 - Add-item form now validates client-side before submit:
   - Item name is required.
   - Quantity must be a positive integer.
@@ -54,12 +58,18 @@ Zero-Waste Pantry Manager is a web application that helps users manage pantry in
 
 ## Frontend Architecture
 - `src/pages/InventoryPage.jsx` composes the inventory list experience.
+- `src/pages/HomePage.jsx` and `src/pages/AboutPage.jsx` provide public landing pages.
+- `src/pages/DashboardPage.jsx` provides a private overview page with profile and chart content.
 - `src/pages/LoginPage.jsx` and `src/pages/RegisterPage.jsx` provide auth flows.
 - `src/hooks/useInventory.js` handles item list fetching, sorting, loading/error state, and refetch.
 - `src/hooks/useSummary.js` handles summary metrics fetching.
 - `src/hooks/useAuth.js` and `src/context/AuthContext.jsx` manage session state.
 - `src/components/AddItemForm.jsx`, `src/components/SummaryBar.jsx`, `src/components/SortControls.jsx`, and `src/components/ItemCard.jsx` provide reusable inventory UI building blocks.
+- `src/components/ProfileSection.jsx` shows the signed-in user greeting and logout shortcut.
+- `src/components/InventoryStatusChart.jsx` shows a frontend-only summary bar chart.
 - `src/components/HelpModal.jsx` provides in-app guidance for sorting, color meaning, add flow, and delete confirmation behavior.
+- `src/router/index.jsx` defines the shared app layout and React Router DOM route map.
+- `src/hooks/usePageTitle.js` keeps the browser title in sync with the current page.
 
 ## Quick Start
 1. Go to the backend directory.
@@ -93,7 +103,15 @@ Copy-Item .env.example .env
 npm run dev
 ```
 
-Frontend stack includes Vite + React, Tailwind CSS v4, React Router DOM v7, Axios, and React Icons.
+Frontend stack includes Vite + React, Tailwind CSS v4, React Router DOM v7, Axios, React Icons, and react-hot-toast.
+
+Frontend route map:
+- `/` public Home page
+- `/about` public About page
+- `/login` public Login page
+- `/register` public Register page
+- `/dashboard` private dashboard
+- `/inventory` private inventory view
 
 ## Authentication Flow
 - Register: create account from frontend register page.
@@ -101,6 +119,9 @@ Frontend stack includes Vite + React, Tailwind CSS v4, React Router DOM v7, Axio
 - Session check: frontend restores session state on page load.
 - Logout: clears session and redirects protected routes to login.
 - API access: inventory endpoints require authenticated session.
+- Public pages: Home and About are accessible without authentication.
+- Dashboard: authenticated landing page showing summary, profile, and inventory health chart.
+- Inventory search: filtering happens in the browser, so no backend search endpoint is required.
 
 ## Inventory Data Model
 

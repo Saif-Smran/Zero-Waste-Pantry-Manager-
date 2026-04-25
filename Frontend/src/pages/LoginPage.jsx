@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
+import usePageTitle from '../hooks/usePageTitle'
 
 function LoginPage() {
   const { isAuthenticated, login } = useAuth()
+  usePageTitle('Login | Zero-Waste Pantry Manager')
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -12,7 +14,7 @@ function LoginPage() {
   const [submitting, setSubmitting] = useState(false)
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   const handleSubmit = async (event) => {
@@ -22,7 +24,7 @@ function LoginPage() {
 
     try {
       await login(username.trim(), password)
-      navigate('/', { replace: true })
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       const errorMessage =
         err?.response?.data?.error || err?.message || 'Login failed. Please try again.'
